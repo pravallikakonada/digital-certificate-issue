@@ -50,7 +50,7 @@ const SendExamMail = () => {
       );
 
       console.log("Send exam response:", response.data);
-      alert("Exam mail sent successfully ✅");
+      alert("Exam mail sent successfully ");
 
       setStudentName("");
       setStudentEmail("");
@@ -63,7 +63,7 @@ const SendExamMail = () => {
       } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else {
-        alert("Mail send avvaledu ❌");
+        alert("Mail not send❌");
       }
     } finally {
       setLoading(false);
@@ -131,6 +131,7 @@ const card = {
   background: "#fff",
   padding: "30px",
   borderRadius: "15px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
 };
 
 const input = {
@@ -138,6 +139,8 @@ const input = {
   padding: "12px",
   marginBottom: "12px",
   boxSizing: "border-box",
+  border: "1px solid #ccc",
+  borderRadius: "8px",
 };
 
 const btn = {
@@ -146,7 +149,9 @@ const btn = {
   background: "#2563eb",
   color: "white",
   border: "none",
+  borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
 };
 
 export default SendExamMail;
