@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 
-const API = "https://certificate-backend-mxjt.onrender.com";
+const API = "https://certificate-backend-mxjt.onrender.com/api/courses/";
 
 const ManageCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -12,8 +12,13 @@ const ManageCourses = () => {
 
   // Fetch courses
   const fetchCourses = async () => {
-    const res = await axios.get(API);
-    setCourses(res.data);
+    try {
+      const res = await axios.get(API);
+      setCourses(res.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      alert("Courses fetch avvaledu ❌");
+    }
   };
 
   useEffect(() => {
@@ -24,26 +29,34 @@ const ManageCourses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title) return alert("Enter course title");
-
-    if (editingId) {
-      await axios.put(`${API}update/${editingId}/`, {
-        title,
-        description,
-      });
-      alert("Course updated ✅");
-    } else {
-      await axios.post(`${API}add/`, {
-        title,
-        description,
-      });
-      alert("Course added ✅");
+    if (!title.trim()) {
+      alert("Enter course title");
+      return;
     }
 
-    setTitle("");
-    setDescription("");
-    setEditingId(null);
-    fetchCourses();
+    try {
+      if (editingId) {
+        await axios.put(`${API}${editingId}/`, {
+          title,
+          description,
+        });
+        alert("Course updated ✅");
+      } else {
+        await axios.post(API, {
+          title,
+          description,
+        });
+        alert("Course added ✅");
+      }
+
+      setTitle("");
+      setDescription("");
+      setEditingId(null);
+      fetchCourses();
+    } catch (error) {
+      console.error("Error saving course:", error);
+      alert("Course save avvaledu ❌");
+    }
   };
 
   // Edit
@@ -76,25 +89,29 @@ const ManageCourses = () => {
               style={input}
             />
 
-            <button style={btn}>
+            <button type="submit" style={btn}>
               {editingId ? "Update Course" : "Add Course"}
             </button>
           </form>
 
           <h3 style={{ marginTop: "30px" }}>Existing Courses</h3>
 
-          {courses.map((c) => (
-            <div key={c.id} style={courseBox}>
-              <div>
-                <b>{c.title}</b>
-                <p>{c.description}</p>
-              </div>
+          {courses.length === 0 ? (
+            <p>No courses found.</p>
+          ) : (
+            courses.map((c) => (
+              <div key={c.id} style={courseBox}>
+                <div>
+                  <b>{c.title}</b>
+                  <p>{c.description}</p>
+                </div>
 
-              <button onClick={() => handleEdit(c)} style={editBtn}>
-                Edit
-              </button>
-            </div>
-          ))}
+                <button onClick={() => handleEdit(c)} style={editBtn}>
+                  Edit
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </>
@@ -120,6 +137,7 @@ const input = {
   width: "100%",
   padding: "10px",
   marginBottom: "10px",
+  boxSizing: "border-box",
 };
 
 const btn = {
@@ -128,11 +146,13 @@ const btn = {
   background: "#2563eb",
   color: "white",
   border: "none",
+  cursor: "pointer",
 };
 
 const courseBox = {
   display: "flex",
   justifyContent: "space-between",
+  alignItems: "center",
   padding: "10px",
   border: "1px solid #ddd",
   marginTop: "10px",
@@ -143,6 +163,7 @@ const editBtn = {
   color: "white",
   border: "none",
   padding: "6px 10px",
+  cursor: "pointer",
 };
 
 export default ManageCourses;
