@@ -15,7 +15,8 @@ const SendExamMail = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(COURSE_API);
-      setCourses(Array.isArray(res.data) ? res.data : []);
+      console.log("Courses API response:", res.data);
+      setCourses(res.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
       alert("Courses load avvaledu ❌");
@@ -29,7 +30,7 @@ const SendExamMail = () => {
   const handleSendExam = async (e) => {
     e.preventDefault();
 
-    if (!studentName.trim() || !studentEmail.trim() || !selectedCourse) {
+    if (!studentName || !studentEmail || !selectedCourse) {
       alert("All fields fill cheyyi");
       return;
     }
@@ -48,7 +49,7 @@ const SendExamMail = () => {
       setStudentEmail("");
       setSelectedCourse("");
     } catch (error) {
-      console.error("Error sending exam mail:", error);
+      console.error("Error sending exam:", error);
       alert("Mail send avvaledu ❌");
     } finally {
       setLoading(false);
@@ -120,14 +121,14 @@ const card = {
 
 const input = {
   width: "100%",
-  padding: "10px",
+  padding: "12px",
   marginBottom: "12px",
   boxSizing: "border-box",
 };
 
 const btn = {
   width: "100%",
-  padding: "10px",
+  padding: "12px",
   background: "#2563eb",
   color: "white",
   border: "none",
