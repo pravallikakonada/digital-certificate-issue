@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE = `http://${window.location.hostname}:8000`;
+const API_BASE = "https://certificate-backend-mxjt.onrender.com";
 
 const AuthExam = () => {
   const navigate = useNavigate();
@@ -38,53 +38,63 @@ const AuthExam = () => {
       return;
     }
 
-    if (isSignup) {
-      if (!name.trim()) {
-        setError("Please enter your name");
-        return;
-      }
-
-      if (!confirmPassword.trim()) {
-        setError("Please confirm password");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setError("Password and confirm password must match");
-        return;
-      }
-    }
-
     try {
       setLoading(true);
 
       if (isSignup) {
-        await axios.post(`${API_BASE}/api/accounts/signup/`, {
-          name,
-          email,
-          password,
-        });
+        if (!name.trim()) {
+          setError("Please enter your name");
+          setLoading(false);
+          return;
+        }
+
+        if (!confirmPassword.trim()) {
+          setError("Please confirm password");
+          setLoading(false);
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          setLoading(false);
+          return;
+        }
+
+        try {
+          await axios.post(`${API_BASE}/api/accounts/signup/`, {
+            name: name.trim(),
+            email: email.trim(),
+            password: password.trim(),
+          });
+        } catch (signupErr) {
+          const msg = signupErr?.response?.data?.error || "";
+          if (!msg.toLowerCase().includes("already exists")) {
+            setError(msg || "Signup failed ❌");
+            setLoading(false);
+            return;
+          }
+        }
       }
 
       const loginResponse = await axios.post(`${API_BASE}/api/accounts/login/`, {
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      localStorage.setItem("studentEmail", loginResponse.data.email);
+      localStorage.setItem("studentEmail", loginResponse.data.email || email);
       localStorage.setItem("studentName", loginResponse.data.name || name);
       localStorage.setItem("role", "student");
 
-      alert(isSignup ? "Signup successful ✅" : "Login successful ✅");
+      alert(isSignup ? "Signup/Login successful ✅" : "Login successful ✅");
       goToTest();
     } catch (err) {
-      console.error("AuthExam error:", err?.response?.data || err);
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        (isSignup ? "Signup/Login failed ❌" : "Login failed ❌");
 
-      if (err?.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError(isSignup ? "Signup failed ❌" : "Login failed ❌");
-      }
+      setError(msg);
+      console.error("AuthExam error:", err?.response?.data || err);
     } finally {
       setLoading(false);
     }
@@ -102,7 +112,7 @@ const AuthExam = () => {
         </p>
 
         <form onSubmit={handleSubmit}>
-          {isSignup && (
+          {isSignup ? (
             <>
               <input
                 type="text"
@@ -136,9 +146,7 @@ const AuthExam = () => {
                 style={inputStyle}
               />
             </>
-          )}
-
-          {!isSignup && (
+          ) : (
             <>
               <input
                 type="email"

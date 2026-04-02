@@ -1,50 +1,67 @@
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+from .models import StudentAccount
 
 
 @api_view(["POST"])
-def signup_view(request):
+def signup(request):
     name = request.data.get("name")
     email = request.data.get("email")
     password = request.data.get("password")
 
     if not name or not email or not password:
-        return Response({"error": "All fields are required"}, status=400)
+        return Response(
+            {"error": "All fields are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    if User.objects.filter(username=email).exists():
-        return Response({"error": "Email already exists"}, status=400)
+    if StudentAccount.objects.filter(email=email).exists():
+        return Response(
+            {"error": "Account already exists. Please login."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    user = User.objects.create_user(
-        username=email,
+    user = StudentAccount.objects.create(
+        name=name,
         email=email,
-        password=password,
-        first_name=name
+        password=password
     )
 
-    return Response({
-        "message": "Signup successful",
-        "name": user.first_name,
-        "email": user.email
-    })
+    return Response(
+        {
+            "message": "Signup successful",
+            "name": user.name,
+            "email": user.email
+        },
+        status=status.HTTP_201_CREATED
+    )
 
 
 @api_view(["POST"])
-def login_view(request):
+def login(request):
     email = request.data.get("email")
     password = request.data.get("password")
 
     if not email or not password:
-        return Response({"error": "Email and password are required"}, status=400)
+        return Response(
+            {"error": "Email and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    user = authenticate(username=email, password=password)
+    try:
+        user = StudentAccount.objects.get(email=email, password=password)
+    except StudentAccount.DoesNotExist:
+        return Response(
+            {"error": "Invalid email or password"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    if user is None:
-        return Response({"error": "Invalid email or password"}, status=400)
-
-    return Response({
-        "message": "Login successful",
-        "name": user.first_name,
-        "email": user.email
-    })
+    return Response(
+        {
+            "message": "Login successful",
+            "name": user.name,
+            "email": user.email
+        },
+        status=status.HTTP_200_OK
+    )
