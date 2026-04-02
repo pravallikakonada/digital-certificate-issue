@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import issue_certificate, verify_certificate, certificate_list
+from .views import certificate_list, issue_certificate, verify_certificate
 
 urlpatterns = [
     path("", certificate_list, name="certificate_list"),

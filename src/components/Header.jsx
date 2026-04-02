@@ -1,65 +1,80 @@
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const navigate = useNavigate();
-  const email = localStorage.getItem("email");
+
+  const email =
+    localStorage.getItem("email") || localStorage.getItem("studentEmail");
+  const role = localStorage.getItem("role");
 
   const handleLogout = () => {
     localStorage.removeItem("email");
+    localStorage.removeItem("studentEmail");
+    localStorage.removeItem("studentName");
+    localStorage.removeItem("role");
     navigate("/");
   };
 
   return (
-    <div
+    <header
       style={{
         background: "#1e3a8a",
         color: "white",
-        padding: "14px 30px",
+        padding: "16px 30px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
       }}
     >
-      {/* Title */}
       <h2 style={{ margin: 0 }}>Digital Certificate System</h2>
 
-      {/* Links */}
-      <div
+      <nav
         style={{
           display: "flex",
-          gap: "20px",
+          gap: "18px",
           alignItems: "center",
+          flexWrap: "wrap",
         }}
       >
-        <Link to="/dashboard" style={linkStyle}>
-          Dashboard
-        </Link>
-        <Link to="/send-exam-mail" style={linkStyle}>Send Exam</Link>
-<Link to="/completed-tests" style={linkStyle}>Completed Tests</Link>
-        <Link to="/upload" style={linkStyle}>
-          Upload CSV
-        </Link>
-        <Link to="/issue" style={linkStyle}>
-          Issue
-        </Link>
+        {!email && (
+          <>
+            <Link to="/" style={linkStyle}>Home</Link>
+            <Link to="/verify" style={linkStyle}>Verify</Link>
+            <Link to="/admin-login" style={linkStyle}>Admin Login</Link>
+            <Link to="/student-login" style={linkStyle}>Student Login</Link>
+            
+          </>
+        )}
 
-        <Link to="/my-certificates" style={linkStyle}>
-          My Certificate
-        </Link>
+        {email && role === "admin" && (
+          <>
+            <Link to="/admin-dashboard" style={linkStyle}>Admin Dashboard</Link>
+            <Link to="/send-exam-mail" style={linkStyle}>Send Exam</Link>
+            <Link to="/completed-tests" style={linkStyle}>Completed Tests</Link>
+            
+          </>
+        )}
 
-        <Link to="/verify" style={linkStyle}>
-          Verify
-        </Link>
+        {email && role === "student" && (
+          <>
+            <Link to="/student-dashboard" style={linkStyle}>Student Dashboard</Link>
+            <Link to="/my-certificates" style={linkStyle}>My Certificates</Link>
+            <Link to="/verify" style={linkStyle}>Verify</Link>
+          </>
+        )}
 
-        {/* Email */}
-        <span style={{ fontSize: "14px" }}>{email}</span>
-
-        {/* Logout */}
-        <button onClick={handleLogout} style={btnStyle}>
-          Logout
-        </button>
-      </div>
-    </div>
+        {email && (
+          <>
+            <span style={{ fontSize: "14px" }}>{email}</span>
+            <button onClick={handleLogout} style={logoutBtn}>
+              Logout
+            </button>
+          </>
+        )}
+      </nav>
+    </header>
   );
 };
 
@@ -69,11 +84,14 @@ const linkStyle = {
   fontWeight: "500",
 };
 
-const btnStyle = {
-  padding: "6px 12px",
+const logoutBtn = {
+  background: "white",
+  color: "#1e3a8a",
   border: "none",
-  borderRadius: "6px",
+  padding: "8px 14px",
+  borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
 };
 
 export default Header;

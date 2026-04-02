@@ -30,6 +30,9 @@ def issue_certificate(request):
     certificate_id = request.data.get("certificate_id")
     status = request.data.get("status", "Issued")
 
+    if not student_name or not student_email or not course_title:
+        return Response({"error": "Missing required fields"}, status=400)
+
     if not certificate_id:
         certificate_id = "CERT-" + str(uuid.uuid4())[:8].upper()
 
@@ -44,8 +47,8 @@ def issue_certificate(request):
         status=status,
     )
 
+    login_link = f"http://192.168.29.45:5173/login"
     verify_link = f"http://192.168.29.45:5173/verify?certificateId={certificate_id}"
-    my_certificate_link = f"http://192.168.29.45:5173/my-certificates"
 
     send_mail(
         subject="Certificate Issued Successfully",
@@ -60,8 +63,8 @@ Course: {course_title}
 Certificate ID: {certificate_id}
 Status: {status}
 
-View your certificate:
-{my_certificate_link}
+Please login to view your certificate:
+{login_link}
 
 Verify your certificate:
 {verify_link}

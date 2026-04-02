@@ -2,7 +2,6 @@ from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import ExamInvitation, Question, ExamSubmission
-from urllib.parse import quote
 
 
 @api_view(["GET", "POST"])
@@ -28,8 +27,8 @@ def exam_invitation_list_create(request):
         course_title = request.data.get("course_title")
 
         exam_link = (
-            f"http://192.168.29.45:5173/auth-exam"
-            f"?name={quote(student_name)}&email={quote(student_email)}&course={quote(course_title)}"
+            f"http://10.20.1.126:5173/auth-exam"
+            f"?name={student_name}&email={student_email}&course={course_title}"
         )
 
         invitation = ExamInvitation.objects.create(
@@ -40,12 +39,6 @@ def exam_invitation_list_create(request):
             status="Pending"
         )
 
-        print("MAIL START")
-        print("Student Name:", student_name)
-        print("Student Email:", student_email)
-        print("Course Title:", course_title)
-        print("Exam Link:", exam_link)
-
         send_mail(
             subject="Course Exam Invitation",
             message=f"""
@@ -53,7 +46,7 @@ Hi {student_name},
 
 You have been invited to take the exam for the course: {course_title}
 
-Click the link below to take the exam:
+Click the link below to login/signup and take the exam:
 {exam_link}
 
 Thank you.
@@ -62,8 +55,6 @@ Thank you.
             recipient_list=[student_email],
             fail_silently=False,
         )
-
-        print("MAIL END")
 
         return Response({
             "message": "Exam invitation sent successfully",

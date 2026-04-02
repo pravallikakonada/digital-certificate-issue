@@ -14,7 +14,7 @@ def signup_view(request):
         return Response({"error": "All fields are required"}, status=400)
 
     if User.objects.filter(username=email).exists():
-        return Response({"error": "User already exists"}, status=400)
+        return Response({"error": "Email already exists"}, status=400)
 
     user = User.objects.create_user(
         username=email,
@@ -40,11 +40,11 @@ def login_view(request):
 
     user = authenticate(username=email, password=password)
 
-    if user is not None:
-        return Response({
-            "message": "Login successful",
-            "name": user.first_name,
-            "email": user.email
-        })
-    else:
+    if user is None:
         return Response({"error": "Invalid email or password"}, status=400)
+
+    return Response({
+        "message": "Login successful",
+        "name": user.first_name,
+        "email": user.email
+    })

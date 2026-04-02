@@ -1,22 +1,21 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://192.168.29.45:8000";
+const API_BASE = `http://${window.location.hostname}:8000`;
 
 const AuthExam = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);
-  const studentNameFromLink = params.get("name") || "";
-  const studentEmailFromLink = params.get("email") || "";
-  const courseFromLink = params.get("course") || "";
+  const emailFromLink = params.get("email") || "";
+  const nameFromLink = params.get("name") || "";
+  const course = params.get("course") || "";
 
-  const [isLogin, setIsLogin] = useState(true);
-
-  const [name, setName] = useState(studentNameFromLink);
-  const [email, setEmail] = useState(studentEmailFromLink);
+  const [isSignup, setIsSignup] = useState(true);
+  const [name, setName] = useState(nameFromLink);
+  const [email, setEmail] = useState(emailFromLink);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,167 +23,143 @@ const AuthExam = () => {
 
   const goToTest = () => {
     navigate(
-      `/take-test?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&course=${encodeURIComponent(courseFromLink)}`
+      `/take-test?name=${encodeURIComponent(name)}&email=${encodeURIComponent(
+        email
+      )}&course=${encodeURIComponent(course)}`
     );
   };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) {
-      setError("Please enter email and password");
+    if (!email.trim() || !password.trim()) {
+      setError("Please fill all required fields");
       return;
+    }
+
+    if (isSignup) {
+      if (!name.trim()) {
+        setError("Please enter your name");
+        return;
+      }
+
+      if (!confirmPassword.trim()) {
+        setError("Please confirm password");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Password and confirm password must match");
+        return;
+      }
     }
 
     try {
       setLoading(true);
 
-      await axios.post(`${API_BASE_URL}/api/accounts/login/`, {
+      if (isSignup) {
+        await axios.post(`${API_BASE}/api/accounts/signup/`, {
+          name,
+          email,
+          password,
+        });
+      }
+
+      const loginResponse = await axios.post(`${API_BASE}/api/accounts/login/`, {
         email,
         password,
       });
 
-      localStorage.setItem("studentEmail", email);
-      localStorage.setItem("studentName", name);
+      localStorage.setItem("studentEmail", loginResponse.data.email);
+      localStorage.setItem("studentName", loginResponse.data.name || name);
+      localStorage.setItem("role", "student");
 
-      alert("Login successful ✅");
+      alert(isSignup ? "Signup successful ✅" : "Login successful ✅");
       goToTest();
     } catch (err) {
-      console.error(err);
-      setError("Invalid email or password");
-    } finally {
-      setLoading(false);
-    }
-  };
+      console.error("AuthExam error:", err?.response?.data || err);
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill all fields");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Password and Confirm Password must be same");
-      return;
-    }
-
-    if (password.length < 4) {
-      setError("Password must be at least 4 characters");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      await axios.post(`${API_BASE_URL}/api/accounts/signup/`, {
-        name,
-        email,
-        password,
-      });
-
-      localStorage.setItem("studentEmail", email);
-      localStorage.setItem("studentName", name);
-
-      alert("Signup successful ✅");
-      goToTest();
-    } catch (err) {
-      console.error(err);
-      setError("Signup failed. Email may already exist.");
+      if (err?.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError(isSignup ? "Signup failed ❌" : "Login failed ❌");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#eef4ff",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "450px",
-          background: "#ffffff",
-          borderRadius: "18px",
-          padding: "30px",
-          boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ marginTop: 0, color: "#1e3a8a" }}>
-          {isLogin ? "Login to Start Exam" : "Signup to Start Exam"}
+    <div style={container}>
+      <div style={card}>
+        <h2 style={{ color: "#1e3a8a", marginTop: 0 }}>
+          {isSignup ? "Signup to Start Exam" : "Login to Start Exam"}
         </h2>
 
-        <p style={{ color: "#555", marginBottom: "20px" }}>
-          <b>Course:</b> {courseFromLink}
+        <p style={{ color: "#555", marginBottom: "18px" }}>
+          <b>Course:</b> {course}
         </p>
 
-        <form onSubmit={isLogin ? handleLogin : handleSignup}>
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={inputStyle}
-            />
+        <form onSubmit={handleSubmit}>
+          {isSignup && (
+            <>
+              <input
+                type="text"
+                placeholder="Your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+              />
+
+              <input
+                type="email"
+                placeholder="Your Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+              />
+
+              <input
+                type="password"
+                placeholder="Create Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={inputStyle}
+              />
+
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={inputStyle}
+              />
+            </>
           )}
 
-          {isLogin && (
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={inputStyle}
-            />
-          )}
+          {!isSignup && (
+            <>
+              <input
+                type="email"
+                placeholder="Your Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+              />
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-          />
-
-          <input
-            type="password"
-            placeholder={isLogin ? "Enter Password" : "Create Password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-          />
-
-          {!isLogin && (
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              style={inputStyle}
-            />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={inputStyle}
+              />
+            </>
           )}
 
           {error && (
-            <p
-              style={{
-                color: "red",
-                marginTop: "0",
-                marginBottom: "12px",
-                fontSize: "14px",
-              }}
-            >
+            <p style={{ color: "red", marginTop: "6px", marginBottom: "12px" }}>
               {error}
             </p>
           )}
@@ -192,31 +167,48 @@ const AuthExam = () => {
           <button type="submit" style={btnStyle} disabled={loading}>
             {loading
               ? "Please wait..."
-              : isLogin
-              ? "Login & Start Exam"
-              : "Signup & Start Exam"}
+              : isSignup
+              ? "Signup & Start Exam"
+              : "Login & Start Exam"}
           </button>
         </form>
 
-        <p style={{ marginTop: "18px", color: "#444" }}>
-          {isLogin ? "New user?" : "Already have an account?"}{" "}
+        <p style={{ marginTop: "18px" }}>
+          {isSignup ? "Already have an account? " : "New user? "}
           <span
             onClick={() => {
-              setIsLogin(!isLogin);
               setError("");
+              setPassword("");
+              setConfirmPassword("");
+              setIsSignup(!isSignup);
             }}
-            style={{
-              color: "#2563eb",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
+            style={{ color: "#2563eb", cursor: "pointer", fontWeight: "600" }}
           >
-            {isLogin ? "Signup here" : "Login here"}
+            {isSignup ? "Login here" : "Signup here"}
           </span>
         </p>
       </div>
     </div>
   );
+};
+
+const container = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "#eef4ff",
+  padding: "20px",
+  fontFamily: "Arial, sans-serif",
+};
+
+const card = {
+  width: "100%",
+  maxWidth: "420px",
+  background: "#fff",
+  padding: "28px",
+  borderRadius: "18px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
 };
 
 const inputStyle = {
