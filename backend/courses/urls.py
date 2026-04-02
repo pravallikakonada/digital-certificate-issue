@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import get_courses, add_course, update_course
+from .views import course_list_create, course_detail
 
 urlpatterns = [
-    path("", get_courses, name="get_courses"),
-    path("add/", add_course, name="add_course"),
-    path("update/<int:id>/", update_course, name="update_course"),
+    path("", course_list_create, name="course-list-create"),
+    path("<int:pk>/", course_detail, name="course-detail"),
 ]

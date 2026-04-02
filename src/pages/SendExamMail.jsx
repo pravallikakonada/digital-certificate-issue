@@ -2,59 +2,56 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 
-const API_BASE_URL = "https://certificate-backend-mxjt.onrender.com";
+const COURSE_API = "https://certificate-backend-mxjt.onrender.com/api/courses/";
+const SEND_EXAM_API = "https://certificate-backend-mxjt.onrender.com/api/exams/send-exam/";
 
 const SendExamMail = () => {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
-  const [courseTitle, setCourseTitle] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [courses, setCourses] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get(COURSE_API);
+      setCourses(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      alert("Courses load avvaledu ❌");
+    }
+  };
 
   useEffect(() => {
     fetchCourses();
   }, []);
 
-  const fetchCourses = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/courses/`);
-      setCourses(response.data || []);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      alert("Failed to load courses ❌");
-    } finally {
-      setLoadingCourses(false);
-    }
-  };
-
-  const handleSendMail = async (e) => {
+  const handleSendExam = async (e) => {
     e.preventDefault();
 
-    if (!studentName.trim() || !studentEmail.trim() || !courseTitle.trim()) {
-      alert("Please fill all fields");
+    if (!studentName.trim() || !studentEmail.trim() || !selectedCourse) {
+      alert("All fields fill cheyyi");
       return;
     }
 
     try {
-      setSending(true);
+      setLoading(true);
 
-      await axios.post(`${API_BASE_URL}/api/exams/send-exam-mail/`, {
+      await axios.post(SEND_EXAM_API, {
         student_name: studentName,
         student_email: studentEmail,
-        course_title: courseTitle,
+        course_title: selectedCourse,
       });
 
       alert("Exam mail sent successfully ✅");
-
       setStudentName("");
       setStudentEmail("");
-      setCourseTitle("");
+      setSelectedCourse("");
     } catch (error) {
       console.error("Error sending exam mail:", error);
-      alert("Failed to send exam mail ❌");
+      alert("Mail send avvaledu ❌");
     } finally {
-      setSending(false);
+      setLoading(false);
     }
   };
 
@@ -62,33 +59,17 @@ const SendExamMail = () => {
     <>
       <Header />
 
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#eef4ff",
-          padding: "30px",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "700px",
-            margin: "0 auto",
-            background: "#fff",
-            padding: "30px",
-            borderRadius: "16px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h1 style={{ color: "#1e3a8a", marginTop: 0 }}>Send Exam Mail</h1>
+      <div style={container}>
+        <div style={card}>
+          <h2>Send Exam Mail</h2>
 
-          <form onSubmit={handleSendMail}>
+          <form onSubmit={handleSendExam}>
             <input
               type="text"
               placeholder="Student Name"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
-              style={inputStyle}
+              style={input}
             />
 
             <input
@@ -96,19 +77,15 @@ const SendExamMail = () => {
               placeholder="Student Email"
               value={studentEmail}
               onChange={(e) => setStudentEmail(e.target.value)}
-              style={inputStyle}
+              style={input}
             />
 
             <select
-              value={courseTitle}
-              onChange={(e) => setCourseTitle(e.target.value)}
-              style={inputStyle}
-              disabled={loadingCourses}
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              style={input}
             >
-              <option value="">
-                {loadingCourses ? "Loading courses..." : "Select Course"}
-              </option>
-
+              <option value="">Select Course</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.title}>
                   {course.title}
@@ -116,8 +93,8 @@ const SendExamMail = () => {
               ))}
             </select>
 
-            <button type="submit" style={btnStyle} disabled={sending}>
-              {sending ? "Sending..." : "Send Exam Mail"}
+            <button type="submit" style={btn} disabled={loading}>
+              {loading ? "Sending..." : "Send Exam"}
             </button>
           </form>
         </div>
@@ -126,26 +103,35 @@ const SendExamMail = () => {
   );
 };
 
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  marginBottom: "12px",
-  borderRadius: "8px",
-  border: "1px solid #ccc",
-  boxSizing: "border-box",
-  fontSize: "15px",
+const container = {
+  minHeight: "100vh",
+  background: "#eef4ff",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
 };
 
-const btnStyle = {
+const card = {
+  width: "500px",
+  background: "#fff",
+  padding: "30px",
+  borderRadius: "15px",
+};
+
+const input = {
   width: "100%",
-  padding: "12px",
+  padding: "10px",
+  marginBottom: "12px",
+  boxSizing: "border-box",
+};
+
+const btn = {
+  width: "100%",
+  padding: "10px",
   background: "#2563eb",
   color: "white",
   border: "none",
-  borderRadius: "8px",
   cursor: "pointer",
-  fontWeight: "600",
-  fontSize: "15px",
 };
 
 export default SendExamMail;
