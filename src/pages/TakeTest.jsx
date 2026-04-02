@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = `http://${window.location.hostname}:8000`;
+const API_BASE_URL = "https://certificate-backend-mxjt.onrender.com";
 
 const TakeTest = () => {
   const navigate = useNavigate();
@@ -25,24 +25,27 @@ const TakeTest = () => {
     setStudentEmail(email);
     setCourseTitle(course);
 
-    if (course) {
-      axios
-        .get(
-          `${API_BASE_URL}/api/exams/questions/?course=${encodeURIComponent(course)}`
-        )
-        .then((response) => {
-          setQuestions(response.data || []);
-        })
-        .catch((error) => {
-          console.error("Error fetching questions:", error);
-          alert("Failed to load questions ❌");
-        })
-        .finally(() => {
+    const fetchQuestions = async () => {
+      try {
+        if (!course) {
           setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(course)}/`
+        );
+
+        setQuestions(response.data || []);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        alert("Failed to load questions ❌");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
   }, []);
 
   const handleOptionChange = (questionId, value) => {
@@ -79,10 +82,14 @@ const TakeTest = () => {
       });
 
       alert(
-        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}\nPlease wait for next process.`
+        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}`
       );
 
-      navigate("/student-dashboard");
+      navigate(
+        `/student-dashboard?name=${encodeURIComponent(
+          studentName
+        )}&email=${encodeURIComponent(studentEmail)}`
+      );
     } catch (error) {
       console.error("Error submitting exam:", error);
       alert("Failed to submit exam ❌");
