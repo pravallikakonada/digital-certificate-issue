@@ -7,6 +7,7 @@ class ExamInvitation(models.Model):
     course_title = models.CharField(max_length=200)
     exam_link = models.URLField(blank=True, null=True)
     status = models.CharField(max_length=50, default="Pending")
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.student_name} - {self.course_title}"
@@ -20,6 +21,7 @@ class Question(models.Model):
     option3 = models.CharField(max_length=255)
     option4 = models.CharField(max_length=255)
     correct_answer = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.question_text
@@ -34,6 +36,7 @@ class ExamSubmission(models.Model):
     result = models.CharField(max_length=50, default="Failed")
     eligible_for_certificate = models.BooleanField(default=False)
     status = models.CharField(max_length=50, default="Completed")
+    submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.student_name} - {self.course_title} - {self.score}"

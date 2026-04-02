@@ -1,14 +1,9 @@
 from django.urls import path
-from .views import (
-    exam_invitation_list_create,
-    question_list_by_course,
-    submit_exam,
-    completed_tests,
-)
+from .views import send_exam_mail, exam_questions, submit_exam, completed_tests
 
 urlpatterns = [
-    path("send-exam-mail/", exam_invitation_list_create, name="send_exam_mail"),
-    path("questions/", question_list_by_course, name="question_list_by_course"),
-    path("submit-exam/", submit_exam, name="submit_exam"),
-    path("completed-tests/", completed_tests, name="completed_tests"),
+    path("send-exam/", send_exam_mail, name="send-exam"),
+    path("questions/<str:course_title>/", exam_questions, name="exam-questions"),
+    path("submit-exam/", submit_exam, name="submit-exam"),
+    path("completed-tests/", completed_tests, name="completed-tests"),
 ]
