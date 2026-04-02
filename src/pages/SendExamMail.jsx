@@ -15,7 +15,10 @@ const SendExamMail = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(COURSE_API);
-      setCourses(res.data || []);
+      console.log("COURSES DATA:", res.data);
+
+      const courseList = Array.isArray(res.data) ? res.data : [];
+      setCourses(courseList);
     } catch (error) {
       console.error("Error fetching courses:", error);
       alert("Courses load avvaledu ❌");
@@ -45,12 +48,12 @@ const SendExamMail = () => {
           course_title: selectedCourse.trim(),
         },
         {
-          timeout: 30000,
+          timeout: 120000,
         }
       );
 
       console.log("Send exam response:", response.data);
-      alert("Exam mail sent successfully ");
+      alert("Exam mail sent successfully ✅");
 
       setStudentName("");
       setStudentEmail("");
@@ -63,7 +66,7 @@ const SendExamMail = () => {
       } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else {
-        alert("Mail not send❌");
+        alert("Mail send avvaledu ❌");
       }
     } finally {
       setLoading(false);
@@ -101,6 +104,7 @@ const SendExamMail = () => {
               style={input}
             >
               <option value="">Select Course</option>
+
               {courses.map((course) => (
                 <option key={course.id} value={course.title}>
                   {course.title}
@@ -141,6 +145,8 @@ const input = {
   boxSizing: "border-box",
   border: "1px solid #ccc",
   borderRadius: "8px",
+  background: "white",
+  color: "black",
 };
 
 const btn = {
@@ -151,7 +157,6 @@ const btn = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
-  fontWeight: "600",
 };
 
 export default SendExamMail;
