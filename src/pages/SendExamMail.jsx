@@ -15,7 +15,6 @@ const SendExamMail = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(COURSE_API);
-      console.log("Courses API response:", res.data);
       setCourses(res.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -30,7 +29,7 @@ const SendExamMail = () => {
   const handleSendExam = async (e) => {
     e.preventDefault();
 
-    if (!studentName || !studentEmail || !selectedCourse) {
+    if (!studentName.trim() || !studentEmail.trim() || !selectedCourse.trim()) {
       alert("All fields fill cheyyi");
       return;
     }
@@ -38,19 +37,34 @@ const SendExamMail = () => {
     try {
       setLoading(true);
 
-      await axios.post(SEND_EXAM_API, {
-        student_name: studentName,
-        student_email: studentEmail,
-        course_title: selectedCourse,
-      });
+      const response = await axios.post(
+        SEND_EXAM_API,
+        {
+          student_name: studentName.trim(),
+          student_email: studentEmail.trim(),
+          course_title: selectedCourse.trim(),
+        },
+        {
+          timeout: 30000,
+        }
+      );
 
+      console.log("Send exam response:", response.data);
       alert("Exam mail sent successfully ✅");
+
       setStudentName("");
       setStudentEmail("");
       setSelectedCourse("");
     } catch (error) {
-      console.error("Error sending exam:", error);
-      alert("Mail send avvaledu ❌");
+      console.error("Error sending exam:", error?.response?.data || error);
+
+      if (error.code === "ECONNABORTED") {
+        alert("Server response late avthundi / timeout ❌");
+      } else if (error?.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("Mail send avvaledu ❌");
+      }
     } finally {
       setLoading(false);
     }
