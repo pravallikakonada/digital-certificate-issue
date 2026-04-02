@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://certificate-backend-mxjt.onrender.com";
 
 const StudentLogin = () => {
   const navigate = useNavigate();

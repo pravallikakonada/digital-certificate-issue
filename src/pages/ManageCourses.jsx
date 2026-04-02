@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 
-const API = "http://127.0.0.1:8000/api/courses/";
+const API = "https://certificate-backend-mxjt.onrender.com";
 
 const ManageCourses = () => {
   const [courses, setCourses] = useState([]);
