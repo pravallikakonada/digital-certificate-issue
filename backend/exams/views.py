@@ -3,7 +3,6 @@ from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 from .models import ExamInvitation, Question, ExamSubmission
 
 
@@ -101,12 +100,13 @@ def submit_exam(request):
     )
 
     return Response({
-        "message": "Exam submitted successfully",
+        "message": "Exam submitted successfully ✅",
         "id": submission.id,
         "result": result,
         "score": score,
         "total_questions": total_questions,
         "eligible_for_certificate": eligible_for_certificate,
+        "status": "Completed",
     })
 
 
@@ -130,11 +130,12 @@ def completed_tests(request):
 
     return Response(data)
 
+
 @api_view(["DELETE"])
 def delete_completed_test(request, pk):
     try:
         submission = ExamSubmission.objects.get(pk=pk)
         submission.delete()
-        return Response({"message": "Completed test deleted successfully"})
+        return Response({"message": "Completed test deleted successfully ✅"})
     except ExamSubmission.DoesNotExist:
         return Response({"error": "Completed test not found"}, status=404)

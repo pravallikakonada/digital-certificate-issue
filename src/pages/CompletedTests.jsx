@@ -40,16 +40,27 @@ const CompletedTests = () => {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this completed test?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this completed test?"
+    );
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`${API}${id}/delete/`);
+      await axios.delete(
+        `https://certificate-backend-mxjt.onrender.com/api/exams/completed-tests/${id}/delete/`
+      );
       alert("Completed test deleted successfully ✅");
       fetchTests();
     } catch (error) {
-      console.error("Error deleting completed test:", error);
-      alert("Delete avvaledu ❌");
+      console.error("Delete error:", error?.response?.data || error);
+
+      if (error?.response?.status === 404) {
+        alert("Delete API not found ❌");
+      } else if (error?.response?.status === 405) {
+        alert("Delete method not allowed ❌");
+      } else {
+        alert(error?.response?.data?.error || "Delete avvaledu ❌");
+      }
     }
   };
 
