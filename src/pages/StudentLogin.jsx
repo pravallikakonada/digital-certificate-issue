@@ -1,113 +1,122 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
-const API_BASE_URL = "https://certificate-backend-mxjt.onrender.com";
+const API = "https://certificate-backend-mxjt.onrender.com/api/accounts/login/";
 
 const StudentLogin = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
 
-    if (!email || !password) {
-      setError("Please enter email and password");
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter email and password");
       return;
     }
 
     try {
       setLoading(true);
 
-      const response = await axios.post(`${API_BASE_URL}/api/accounts/login/`, {
-        email,
-        password,
+      const response = await axios.post(API, {
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      localStorage.setItem("email", response.data.email);
       localStorage.setItem("studentEmail", response.data.email);
-      localStorage.setItem("studentName", response.data.name || "");
+      localStorage.setItem("studentName", response.data.name);
       localStorage.setItem("role", "student");
 
-      alert("Student login successful ✅");
+      alert("Login successful ✅");
       navigate("/student-dashboard");
-    } catch (err) {
-      console.error("Student login error:", err?.response?.data || err);
-      setError(err?.response?.data?.error || "Student login failed");
+    } catch (error) {
+      console.error("Student login error:", error?.response?.data || error);
+
+      if (error?.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("Login failed ❌");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={container}>
-      <div style={card}>
-        <h2 style={{ color: "#1e3a8a" }}>Student Login</h2>
+    <>
+      <Header />
 
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Student Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-          />
+      <div style={container}>
+        <div style={card}>
+          <h2 style={title}>Student Login</h2>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-          />
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="Student Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={input}
+            />
 
-          {error && <p style={{ color: "red" }}>{error}</p>}
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={input}
+            />
 
-          <button type="submit" style={btnStyle} disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p style={{ marginTop: "15px" }}>
-          New student? <Link to="/student-signup">Signup here</Link>
-        </p>
+            <button type="submit" style={btn} disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
 const container = {
   minHeight: "100vh",
+  background: "#eef4ff",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "#eef4ff",
+  padding: "20px",
 };
 
 const card = {
   width: "100%",
   maxWidth: "420px",
   background: "#fff",
-  padding: "30px",
-  borderRadius: "16px",
+  padding: "28px",
+  borderRadius: "18px",
   boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
 };
 
-const inputStyle = {
+const title = {
+  color: "#1e3a8a",
+  marginTop: 0,
+  marginBottom: "18px",
+};
+
+const input = {
   width: "100%",
   padding: "12px",
   marginBottom: "12px",
   borderRadius: "8px",
   border: "1px solid #ccc",
   boxSizing: "border-box",
+  fontSize: "15px",
 };
 
-const btnStyle = {
+const btn = {
   width: "100%",
   padding: "12px",
   background: "#2563eb",
@@ -116,6 +125,7 @@ const btnStyle = {
   borderRadius: "8px",
   cursor: "pointer",
   fontWeight: "600",
+  fontSize: "15px",
 };
 
 export default StudentLogin;

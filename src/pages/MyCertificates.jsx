@@ -1,295 +1,128 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
-import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://10.20.1.126:8000";
+const API = "https://certificate-backend-mxjt.onrender.com/api/certificates/";
 
 const MyCertificates = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+
+  const studentEmail = localStorage.getItem("studentEmail");
 
   useEffect(() => {
-    const userEmail =
-      localStorage.getItem("email") || localStorage.getItem("studentEmail");
+    const fetchCertificates = async () => {
+      try {
+        const response = await axios.get(API);
+        const allCertificates = response.data || [];
 
-    // ✅ login lekunte login page ki pampali
-    if (!userEmail) {
-      navigate("/login");
-      return;
-    }
-
-    axios
-      .get(`${API_BASE_URL}/api/certificates/`)
-      .then((res) => {
-        console.log("All certificates:", res.data);
-
-        const userCertificates = res.data.filter(
-          (cert) => cert.student_email === userEmail
+        const myCertificates = allCertificates.filter(
+          (cert) => cert.student_email === studentEmail
         );
 
-        setCertificates(userCertificates);
-      })
-      .catch((err) => {
-        console.error("Error fetching certificates:", err);
-      })
-      .finally(() => {
+        setCertificates(myCertificates);
+      } catch (error) {
+        console.error("Error fetching certificates:", error);
+        alert("Certificates load avvaledu ❌");
+      } finally {
         setLoading(false);
-      });
-  }, [navigate]);
+      }
+    };
+
+    fetchCertificates();
+  }, [studentEmail]);
+
+  const handleDownload = (cert) => {
+    const content = `
+Digital Certificate
+Certificate of Completion
+
+Student Name: ${cert.student_name}
+Student Email: ${cert.student_email}
+Course Name: ${cert.course_title}
+Certificate ID: ${cert.certificate_id}
+Status: ${cert.status}
+
+This certificate is digitally generated and verified.
+    `;
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${cert.certificate_id}.txt`;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <>
       <Header />
 
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#eef2ff",
-          padding: "30px",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#1e3a8a",
-            fontSize: "48px",
-            marginBottom: "30px",
-          }}
-        >
-          My Certificates
-        </h1>
+      <div style={container}>
+        <div style={card}>
+          <h2>My Certificates</h2>
 
-        {loading ? (
-          <p style={{ textAlign: "center", fontSize: "20px" }}>No Certificate Found..</p>
-        ) : certificates.length === 0 ? (
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: "22px",
-              color: "#444",
-            }}
-          >
-            No certificates found
-          </p>
-        ) : (
-          certificates.map((cert, index) => (
-            <div
-              key={index}
-              style={{
-                width: "100%",
-                maxWidth: "950px",
-                margin: "0 auto 40px auto",
-                background: "linear-gradient(135deg, #fffdf7, #fffaf0)",
-                border: "10px solid #d4af37",
-                borderRadius: "24px",
-                padding: "40px 50px",
-                boxShadow: "0 20px 45px rgba(0,0,0,0.12)",
-                position: "relative",
-                overflow: "hidden",
-                fontFamily: "'Georgia', serif",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "14px",
-                  left: "14px",
-                  width: "90px",
-                  height: "90px",
-                  borderTop: "6px solid #1e3a8a",
-                  borderLeft: "6px solid #1e3a8a",
-                  borderRadius: "18px 0 0 0",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "14px",
-                  right: "14px",
-                  width: "90px",
-                  height: "90px",
-                  borderTop: "6px solid #1e3a8a",
-                  borderRight: "6px solid #1e3a8a",
-                  borderRadius: "0 18px 0 0",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "14px",
-                  left: "14px",
-                  width: "90px",
-                  height: "90px",
-                  borderBottom: "6px solid #1e3a8a",
-                  borderLeft: "6px solid #1e3a8a",
-                  borderRadius: "0 0 0 18px",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "14px",
-                  right: "14px",
-                  width: "90px",
-                  height: "90px",
-                  borderBottom: "6px solid #1e3a8a",
-                  borderRight: "6px solid #1e3a8a",
-                  borderRadius: "0 0 18px 0",
-                }}
-              />
+          {loading ? (
+            <p>Loading...</p>
+          ) : certificates.length === 0 ? (
+            <p>No certificates found.</p>
+          ) : (
+            certificates.map((cert) => (
+              <div key={cert.certificate_id} style={certBox}>
+                <p><b>Name:</b> {cert.student_name}</p>
+                <p><b>Email:</b> {cert.student_email}</p>
+                <p><b>Course:</b> {cert.course_title}</p>
+                <p><b>Certificate ID:</b> {cert.certificate_id}</p>
+                <p><b>Status:</b> {cert.status}</p>
 
-              <div style={{ textAlign: "center", marginBottom: "25px" }}>
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: "42px",
-                    color: "#1e3a8a",
-                    fontWeight: "700",
-                    letterSpacing: "1px",
-                  }}
+                <button
+                  style={btn}
+                  onClick={() => handleDownload(cert)}
                 >
-                  Digital Certificate
-                </h1>
-                <p
-                  style={{
-                    marginTop: "8px",
-                    fontSize: "20px",
-                    color: "#b8860b",
-                    fontWeight: "600",
-                    letterSpacing: "1px",
-                  }}
-                >
-                  Certificate of Completion
-                </p>
+                  Download Certificate
+                </button>
               </div>
-
-              <div style={{ textAlign: "center", marginTop: "25px" }}>
-                <p
-                  style={{
-                    fontSize: "20px",
-                    color: "#555",
-                    marginBottom: "10px",
-                  }}
-                >
-                  This is proudly presented to
-                </p>
-
-                <h2
-                  style={{
-                    margin: "10px auto 20px auto",
-                    fontSize: "38px",
-                    color: "#111827",
-                    borderBottom: "3px solid #d4af37",
-                    display: "inline-block",
-                    paddingBottom: "10px",
-                    minWidth: "320px",
-                  }}
-                >
-                  {cert.student_name}
-                </h2>
-
-                <p
-                  style={{
-                    fontSize: "18px",
-                    color: "#374151",
-                    lineHeight: "1.8",
-                    maxWidth: "700px",
-                    margin: "0 auto 25px auto",
-                  }}
-                >
-                  for successfully completing the course
-                  <span style={{ fontWeight: "700", color: "#1e3a8a" }}>
-                    {" "}
-                    {cert.course_title}
-                  </span>{" "}
-                  and meeting the academic requirements of the Digital
-                  Certificate System.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "18px",
-                  marginTop: "25px",
-                  background: "rgba(255,255,255,0.7)",
-                  padding: "20px",
-                  borderRadius: "16px",
-                  border: "1px solid #e5e7eb",
-                }}
-              >
-                <p style={detailText}>
-                  <b>Student Email:</b> {cert.student_email}
-                </p>
-                <p style={detailText}>
-                  <b>Issue Date:</b> {cert.issue_date || "2026-04-01"}
-                </p>
-                <p style={detailText}>
-                  <b>Certificate ID:</b> {cert.certificate_id}
-                </p>
-                <p style={detailText}>
-                  <b>Status:</b> {cert.status}
-                </p>
-              </div>
-
-              <div
-                style={{
-                  marginTop: "40px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "end",
-                  gap: "20px",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#eff6ff",
-                    color: "#1e3a8a",
-                    padding: "12px 18px",
-                    borderRadius: "12px",
-                    fontWeight: "700",
-                    fontSize: "14px",
-                    border: "1px solid #bfdbfe",
-                  }}
-                >
-                  Verified Digital Record
-                </div>
-
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      width: "180px",
-                      borderTop: "2px solid #111827",
-                      marginBottom: "8px",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#444",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Authorized Signature
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
     </>
   );
 };
 
-const detailText = {
-  margin: 0,
-  fontSize: "16px",
-  color: "#374151",
+const container = {
+  minHeight: "100vh",
+  background: "#eef4ff",
+  padding: "30px",
+};
+
+const card = {
+  maxWidth: "900px",
+  margin: "0 auto",
+  background: "#fff",
+  padding: "24px",
+  borderRadius: "16px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+};
+
+const certBox = {
+  border: "1px solid #ddd",
+  borderRadius: "10px",
+  padding: "16px",
+  marginBottom: "15px",
+};
+
+const btn = {
+  marginTop: "10px",
+  padding: "10px 16px",
+  background: "#2563eb",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
 };
 
 export default MyCertificates;
