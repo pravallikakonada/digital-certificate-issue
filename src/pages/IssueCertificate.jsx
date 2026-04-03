@@ -39,7 +39,7 @@ const IssueCertificate = () => {
           status: status,
         },
         {
-          timeout: 20000,
+          timeout: 120000,
         }
       );
 
@@ -54,7 +54,7 @@ const IssueCertificate = () => {
       console.error("Issue certificate error:", error?.response?.data || error);
 
       if (error.code === "ECONNABORTED") {
-        alert("Server response timeout ❌");
+        alert("Certificate create ayye chance undi. Certificate List / My Certificates check cheyyi ✅");
       } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else if (error?.response?.status) {
