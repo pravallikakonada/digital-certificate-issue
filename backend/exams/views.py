@@ -1,3 +1,4 @@
+from urllib.parse import quote
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
@@ -17,7 +18,9 @@ def send_exam_mail(request):
 
     exam_link = (
         f"https://digital-certificate-issue.vercel.app/auth-exam"
-        f"?name={student_name}&email={student_email}&course={course_title}"
+        f"?name={quote(student_name)}"
+        f"&email={quote(student_email)}"
+        f"&course={quote(course_title)}"
     )
 
     try:

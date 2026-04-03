@@ -19,18 +19,7 @@ const TakeTest = () => {
 
     const name = params.get("name") || "";
     const email = params.get("email") || "";
-    let course = params.get("course") || "";
-
-    // QUICK FIX: old mail links ni correct course name ki map cheyyadam
-    if (course.trim().toLowerCase() === "python") {
-      course = "Python Programming";
-    }
-    if (course.trim().toLowerCase() === "react") {
-      course = "React Frontend Development";
-    }
-    if (course.trim().toLowerCase() === "full stack") {
-      course = "Full Stack Web Development";
-    }
+    const course = params.get("course") || "";
 
     setStudentName(name);
     setStudentEmail(email);
@@ -38,13 +27,13 @@ const TakeTest = () => {
 
     const fetchQuestions = async () => {
       try {
-        if (!course) {
+        if (!course.trim()) {
           setLoading(false);
           return;
         }
 
         const response = await axios.get(
-          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(course)}/`
+          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(course.trim())}/`
         );
 
         setQuestions(response.data || []);
@@ -90,10 +79,11 @@ const TakeTest = () => {
         course_title: courseTitle,
         score: score,
         total_questions: questions.length,
+        result: finalResult,
       });
 
       alert(
-        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}\n Pleease wait for next process. Admin will review  and issue your certifiacate.`
+        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}\nPlease wait for next process. Admin will review and issue your certificate.`
       );
 
       navigate("/student-dashboard");
