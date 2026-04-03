@@ -62,11 +62,17 @@ const CompletedTests = () => {
 
                 {test.result === "Passed" && (
                   <button
-                    style={btn}
-                    onClick={() => handleIssueCertificate(test)}
-                  >
-                    Issue Certificate
+                    onClick={() =>
+  navigate("/issue", {
+    state: {
+      student_name: test.student_name,
+      student_email: test.student_email,
+      course_title: test.course_title,
+    },
+  })
+}>
                   </button>
+                  
                 )}
               </div>
             ))
