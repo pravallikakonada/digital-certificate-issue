@@ -8,9 +8,11 @@ from .views import (
 )
 
 urlpatterns = [
-    path("send-exam/", send_exam_mail, name="send-exam"),
-    path("questions/<str:course_title>/", exam_questions, name="exam-questions"),
-    path("submit-exam/", submit_exam, name="submit-exam"),
-    path("completed-tests/", completed_tests, name="completed-tests"),
-    path("completed-tests/<int:pk>/delete/", delete_completed_test, name="delete-completed-test"),
+    path("send-exam/", send_exam_mail),
+    path("questions/<str:course_title>/", exam_questions),
+    path("submit-exam/", submit_exam),
+    path("completed-tests/", completed_tests),
+
+    # 🔥 THIS IS MISSING IN YOUR DEPLOY
+    path("completed-tests/<int:pk>/delete/", delete_completed_test),
 ]

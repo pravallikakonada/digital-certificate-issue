@@ -96,12 +96,7 @@ const CompletedTests = () => {
                     </button>
                   )}
 
-                  <button
-                    style={deleteBtn}
-                    onClick={() => handleDelete(test.id)}
-                  >
-                    Delete
-                  </button>
+               
                 </div>
               </div>
             ))

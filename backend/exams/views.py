@@ -138,4 +138,4 @@ def delete_completed_test(request, pk):
         submission.delete()
         return Response({"message": "Completed test deleted successfully ✅"})
     except ExamSubmission.DoesNotExist:
-        return Response({"error": "Completed test not found"}, status=404)
+       return Response({"error": "Completed test not found"}, status=404)
