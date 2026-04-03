@@ -44,16 +44,14 @@ const Header = () => {
             <Link to="/verify" style={linkStyle}>Verify</Link>
             <Link to="/admin-login" style={linkStyle}>Admin Login</Link>
             <Link to="/student-login" style={linkStyle}>Student Login</Link>
-            
           </>
         )}
 
         {email && role === "admin" && (
           <>
             <Link to="/admin-dashboard" style={linkStyle}>Admin Dashboard</Link>
-            <Link to="/send-exam-mail" style={linkStyle}>Send Exam</Link>
+            <Link to="/send-exam" style={linkStyle}>Send Exam</Link>
             <Link to="/completed-tests" style={linkStyle}>Completed Tests</Link>
-            
           </>
         )}
 
