@@ -4,23 +4,6 @@ from rest_framework.response import Response
 from .models import Certificate
 
 
-@api_view(["GET"])
-def certificate_list(request):
-    certificates = Certificate.objects.all().order_by("-id")
-    data = []
-
-    for cert in certificates:
-        data.append({
-            "student_name": cert.student_name,
-            "student_email": cert.student_email,
-            "course_title": cert.course_title,
-            "certificate_id": cert.certificate_id,
-            "status": cert.status,
-        })
-
-    return Response(data)
-
-
 @api_view(["POST"])
 def issue_certificate(request):
     student_name = request.data.get("student_name")
@@ -32,10 +15,22 @@ def issue_certificate(request):
     if not student_name or not student_email or not course_title or not certificate_id:
         return Response({"error": "All fields are required"}, status=400)
 
+    # same student + same course duplicate block
+    existing_certificate = Certificate.objects.filter(
+        student_email=student_email,
+        course_title=course_title
+    ).first()
+
+    if existing_certificate:
+        return Response(
+            {"error": "Certificate already issued for this student and course"},
+            status=400
+        )
+
     if Certificate.objects.filter(certificate_id=certificate_id).exists():
         return Response({"error": "Certificate ID already exists"}, status=400)
 
-    Certificate.objects.create(
+    cert = Certificate.objects.create(
         student_name=student_name,
         student_email=student_email,
         course_title=course_title,
@@ -51,7 +46,7 @@ def issue_certificate(request):
 Your certificate has been issued successfully.
 
 Student Name: {student_name}
-Course Name: {courseTitle if False else course_title}
+Course Name: {course_title}
 Certificate ID: {certificate_id}
 Status: {status}
 
@@ -68,19 +63,7 @@ Admin
     except Exception as e:
         print("MAIL ERROR:", str(e))
 
-    return Response({"message": "Certificate issued successfully ✅"}, status=201)
-
-
-@api_view(["GET"])
-def verify_certificate(request, certificate_id):
-    try:
-        cert = Certificate.objects.get(certificate_id=certificate_id)
-        return Response({
-            "student_name": cert.student_name,
-            "student_email": cert.student_email,
-            "course_title": cert.course_title,
-            "certificate_id": cert.certificate_id,
-            "status": cert.status,
-        })
-    except Certificate.DoesNotExist:
-        return Response({"error": "Certificate not found"}, status=404)
+    return Response(
+        {"message": "Certificate issued successfully ✅"},
+        status=201
+    )

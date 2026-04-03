@@ -73,7 +73,7 @@ const IssueCertificate = () => {
             <input type="text" value={status} readOnly style={input} />
 
             <button type="submit" style={btn} disabled={loading}>
-              {loading ? "Issuing..." : "Issue Certificate"}
+              {loading ? "Please wait ......" : "Issue Certificate"}
             </button>
           </form>
         </div>
