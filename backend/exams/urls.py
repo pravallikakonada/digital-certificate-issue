@@ -1,5 +1,9 @@
 from django.urls import path
-from .views import send_exam_mail, exam_questions, submit_exam, completed_tests, delete_completed_test
+from .views import (send_exam_mail, 
+                    exam_questions, 
+                    submit_exam, 
+                    completed_tests, 
+                    delete_completed_test,)
 
 urlpatterns = [
     path("send-exam/", send_exam_mail, name="send-exam"),

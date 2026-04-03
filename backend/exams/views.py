@@ -129,6 +129,7 @@ def completed_tests(request):
         })
 
     return Response(data)
+
 @api_view(["DELETE"])
 def delete_completed_test(request, pk):
     try:
