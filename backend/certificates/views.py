@@ -43,5 +43,22 @@ def issue_certificate(request):
             status=status,
         )
         return Response({"message": "Certificate issued successfully ✅"}, status=201)
+
     except Exception as e:
+        print("CERTIFICATE ISSUE ERROR:", str(e))
         return Response({"error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+def verify_certificate(request, certificate_id):
+    try:
+        cert = Certificate.objects.get(certificate_id=certificate_id)
+        return Response({
+            "student_name": cert.student_name,
+            "student_email": cert.student_email,
+            "course_title": cert.course_title,
+            "certificate_id": cert.certificate_id,
+            "status": cert.status,
+        })
+    except Certificate.DoesNotExist:
+        return Response({"error": "Certificate not found"}, status=404)

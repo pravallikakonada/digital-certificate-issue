@@ -14,6 +14,10 @@ const IssueCertificate = () => {
   const [status, setStatus] = useState("Issued");
   const [loading, setLoading] = useState(false);
 
+  const generateNewCertificateId = () => {
+    return "CERT-" + Math.floor(1000 + Math.random() * 9000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -25,25 +29,33 @@ const IssueCertificate = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(API, {
-        student_name: studentName.trim(),
-        student_email: studentEmail.trim(),
-        course_title: courseTitle.trim(),
-        certificate_id: certificateId,
-        status: status,
-      });
+      const response = await axios.post(
+        API,
+        {
+          student_name: studentName.trim(),
+          student_email: studentEmail.trim(),
+          course_title: courseTitle.trim(),
+          certificate_id: certificateId,
+          status: status,
+        },
+        {
+          timeout: 20000,
+        }
+      );
 
       alert(response?.data?.message || "Certificate issued successfully ✅");
 
       setStudentName("");
       setStudentEmail("");
       setCourseTitle("");
-      setCertificateId("CERT-" + Math.floor(1000 + Math.random() * 9000));
+      setCertificateId(generateNewCertificateId());
       setStatus("Issued");
     } catch (error) {
       console.error("Issue certificate error:", error?.response?.data || error);
 
-      if (error?.response?.data?.error) {
+      if (error.code === "ECONNABORTED") {
+        alert("Server response timeout ❌");
+      } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else if (error?.response?.status) {
         alert(`Server error: ${error.response.status}`);
@@ -58,9 +70,10 @@ const IssueCertificate = () => {
   return (
     <>
       <Header />
+
       <div style={container}>
         <div style={card}>
-          <h2>Issue Certificate</h2>
+          <h2 style={title}>Issue Certificate</h2>
 
           <form onSubmit={handleSubmit}>
             <input
@@ -87,8 +100,19 @@ const IssueCertificate = () => {
               style={input}
             />
 
-            <input type="text" value={certificateId} readOnly style={input} />
-            <input type="text" value={status} readOnly style={input} />
+            <input
+              type="text"
+              value={certificateId}
+              readOnly
+              style={input}
+            />
+
+            <input
+              type="text"
+              value={status}
+              readOnly
+              style={input}
+            />
 
             <button type="submit" style={btn} disabled={loading}>
               {loading ? "Issuing..." : "Issue Certificate"}
@@ -106,13 +130,21 @@ const container = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  padding: "20px",
 };
 
 const card = {
-  width: "500px",
+  width: "100%",
+  maxWidth: "500px",
   background: "#fff",
   padding: "30px",
   borderRadius: "15px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+};
+
+const title = {
+  marginBottom: "20px",
+  color: "#1e3a8a",
 };
 
 const input = {
@@ -120,6 +152,9 @@ const input = {
   padding: "12px",
   marginBottom: "12px",
   boxSizing: "border-box",
+  border: "1px solid #ccc",
+  borderRadius: "8px",
+  fontSize: "15px",
 };
 
 const btn = {
@@ -128,7 +163,10 @@ const btn = {
   background: "#2563eb",
   color: "white",
   border: "none",
+  borderRadius: "8px",
   cursor: "pointer",
+  fontSize: "16px",
+  fontWeight: "600",
 };
 
 export default IssueCertificate;
