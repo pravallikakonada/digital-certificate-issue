@@ -32,45 +32,16 @@ const CompletedTests = () => {
         student_name: test.student_name,
         student_email: test.student_email,
         course_title: test.course_title,
-        score: test.score,
-        total_questions: test.total_questions,
-        result: test.result,
       },
     });
-  };
-
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this completed test?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await axios.delete(
-        `https://certificate-backend-mxjt.onrender.com/api/exams/completed-tests/${id}/delete/`
-      );
-      alert("Completed test deleted successfully ✅");
-      fetchTests();
-    } catch (error) {
-      console.error("Delete error:", error?.response?.data || error);
-
-      if (error?.response?.status === 404) {
-        alert("Delete API not found ❌");
-      } else if (error?.response?.status === 405) {
-        alert("Delete method not allowed ❌");
-      } else {
-        alert(error?.response?.data?.error || "Delete avvaledu ❌");
-      }
-    }
   };
 
   return (
     <>
       <Header />
-
       <div style={container}>
         <div style={card}>
-          <h2 style={title}>Completed Tests</h2>
+          <h2>Completed Tests</h2>
 
           {loading ? (
             <p>Loading...</p>
@@ -84,20 +55,15 @@ const CompletedTests = () => {
                 <p><b>Course:</b> {test.course_title}</p>
                 <p><b>Score:</b> {test.score}/{test.total_questions}</p>
                 <p><b>Result:</b> {test.result}</p>
-                <p><b>Status:</b> {test.status}</p>
 
-                <div style={buttonRow}>
-                  {test.result === "Passed" && (
-                    <button
-                      style={issueBtn}
-                      onClick={() => handleIssueCertificate(test)}
-                    >
-                      Issue Certificate
-                    </button>
-                  )}
-
-               
-                </div>
+                {test.result === "Passed" && (
+                  <button
+                    style={btn}
+                    onClick={() => handleIssueCertificate(test)}
+                  >
+                    Issue Certificate
+                  </button>
+                )}
               </div>
             ))
           )}
@@ -122,44 +88,21 @@ const card = {
   boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
 };
 
-const title = {
-  marginBottom: "20px",
-  color: "#1e3a8a",
-};
-
 const testBox = {
   border: "1px solid #ddd",
-  borderRadius: "12px",
+  borderRadius: "10px",
   padding: "16px",
-  marginBottom: "16px",
-  background: "#f9fafb",
+  marginBottom: "15px",
 };
 
-const buttonRow = {
-  display: "flex",
-  gap: "10px",
-  marginTop: "14px",
-  flexWrap: "wrap",
-};
-
-const issueBtn = {
+const btn = {
+  marginTop: "10px",
   padding: "10px 16px",
   background: "#16a34a",
   color: "white",
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
-  fontWeight: "600",
-};
-
-const deleteBtn = {
-  padding: "10px 16px",
-  background: "#dc2626",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "600",
 };
 
 export default CompletedTests;

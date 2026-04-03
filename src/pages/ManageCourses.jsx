@@ -13,7 +13,7 @@ const ManageCourses = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(API);
-      setCourses(res.data);
+      setCourses(res.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
       alert("Courses fetch avvaledu ❌");
@@ -33,12 +33,20 @@ const ManageCourses = () => {
     }
 
     try {
-      await axios.post(API, {
-        title,
-        description,
-      });
+      if (editingId) {
+        await axios.put(`${API}${editingId}/`, {
+          title,
+          description,
+        });
+        alert("Course updated ✅");
+      } else {
+        await axios.post(API, {
+          title,
+          description,
+        });
+        alert("Course added ✅");
+      }
 
-      alert("Course added ✅");
       setTitle("");
       setDescription("");
       setEditingId(null);
@@ -53,12 +61,6 @@ const ManageCourses = () => {
     setTitle(course.title);
     setDescription(course.description);
     setEditingId(course.id);
-  };
-
-  const handleCancelEdit = () => {
-    setTitle("");
-    setDescription("");
-    setEditingId(null);
   };
 
   return (
@@ -85,18 +87,8 @@ const ManageCourses = () => {
             />
 
             <button type="submit" style={btn}>
-              Add Course
+              {editingId ? "Update Course" : "Add Course"}
             </button>
-
-            {editingId && (
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                style={cancelBtn}
-              >
-                Cancel Edit
-              </button>
-            )}
           </form>
 
           <h3 style={{ marginTop: "30px" }}>Existing Courses</h3>
@@ -149,16 +141,6 @@ const btn = {
   width: "100%",
   padding: "10px",
   background: "#2563eb",
-  color: "white",
-  border: "none",
-  cursor: "pointer",
-};
-
-const cancelBtn = {
-  width: "100%",
-  padding: "10px",
-  marginTop: "10px",
-  background: "#6b7280",
   color: "white",
   border: "none",
   cursor: "pointer",
