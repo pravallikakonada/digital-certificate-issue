@@ -14,10 +14,14 @@ const IssueCertificate = () => {
   const [status, setStatus] = useState("Issued");
   const [loading, setLoading] = useState(false);
 
+  const generateNewCertificateId = () => {
+    return "CERT-" + Math.floor(1000 + Math.random() * 9000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!studentName || !studentEmail || !courseTitle) {
+    if (!studentName.trim() || !studentEmail.trim() || !courseTitle.trim()) {
       alert("All fields fill cheyyi");
       return;
     }
@@ -25,26 +29,42 @@ const IssueCertificate = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(API, {
-        student_name: studentName,
-        student_email: studentEmail,
-        course_title: courseTitle,
-        certificate_id: certificateId,
-        status: status,
-      });
+      const response = await axios.post(
+        API,
+        {
+          student_name: studentName.trim(),
+          student_email: studentEmail.trim(),
+          course_title: courseTitle.trim(),
+          certificate_id: certificateId,
+          status: status,
+        },
+        {
+          timeout: 120000,
+        }
+      );
 
-      console.log(response.data);
-      alert("Certificate issued and mail sent successfully ✅");
+      console.log("Issue certificate response:", response.data);
+
+      if (response?.data?.message) {
+        alert(`${response.data.message} ✅`);
+      } else {
+        alert("Certificate issued and mail sent successfully ✅");
+      }
 
       setStudentName("");
       setStudentEmail("");
       setCourseTitle("");
-      setCertificateId("CERT-" + Math.floor(1000 + Math.random() * 9000));
+      setCertificateId(generateNewCertificateId());
       setStatus("Issued");
     } catch (error) {
       console.error("Issue certificate error:", error?.response?.data || error);
-      if (error?.response?.data?.error) {
+
+      if (error.code === "ECONNABORTED") {
+        alert("Server response late avthundi / timeout ❌");
+      } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
+      } else if (error?.response?.data?.message) {
+        alert(error.response.data.message);
       } else {
         alert("Certificate issue avvaledu ❌");
       }
@@ -59,7 +79,7 @@ const IssueCertificate = () => {
 
       <div style={container}>
         <div style={card}>
-          <h2>Issue Certificate</h2>
+          <h2 style={title}>Issue Certificate</h2>
 
           <form onSubmit={handleSubmit}>
             <input
@@ -116,13 +136,21 @@ const container = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  padding: "20px",
 };
 
 const card = {
-  width: "500px",
+  width: "100%",
+  maxWidth: "500px",
   background: "#fff",
   padding: "30px",
   borderRadius: "15px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+};
+
+const title = {
+  marginBottom: "20px",
+  color: "#1e3a8a",
 };
 
 const input = {
@@ -130,6 +158,9 @@ const input = {
   padding: "12px",
   marginBottom: "12px",
   boxSizing: "border-box",
+  border: "1px solid #ccc",
+  borderRadius: "8px",
+  fontSize: "15px",
 };
 
 const btn = {
@@ -138,7 +169,10 @@ const btn = {
   background: "#2563eb",
   color: "white",
   border: "none",
+  borderRadius: "8px",
   cursor: "pointer",
+  fontSize: "16px",
+  fontWeight: "600",
 };
 
 export default IssueCertificate;
