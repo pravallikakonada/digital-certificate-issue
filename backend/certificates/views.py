@@ -5,37 +5,38 @@ from rest_framework.response import Response
 from .models import Certificate
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 def certificate_list_create(request):
-    if request.method == "GET":
-        certificates = Certificate.objects.all()
-        data = []
+    certificates = Certificate.objects.all()
+    data = []
 
-        for cert in certificates:
-            data.append({
-                "student_name": cert.student_name,
-                "student_email": cert.student_email,
-                "course_title": cert.course_title,
-                "certificate_id": cert.certificate_id,
-                "status": cert.status,
-            })
+    for cert in certificates:
+        data.append({
+            "student_name": cert.student_name,
+            "student_email": cert.student_email,
+            "course_title": cert.course_title,
+            "certificate_id": cert.certificate_id,
+            "status": cert.status,
+        })
 
-        return Response(data)
+    return Response(data)
 
-    if request.method == "POST":
-        student_name = request.data.get("student_name")
-        student_email = request.data.get("student_email")
-        course_title = request.data.get("course_title")
-        certificate_id = request.data.get("certificate_id")
-        status = request.data.get("status", "Issued")
 
-        if not student_name or not student_email or not course_title or not certificate_id:
-            return Response({"error": "All fields are required"}, status=400)
+@api_view(["POST"])
+def issue_certificate(request):
+    student_name = request.data.get("student_name")
+    student_email = request.data.get("student_email")
+    course_title = request.data.get("course_title")
+    certificate_id = request.data.get("certificate_id")
+    status = request.data.get("status", "Issued")
 
-        if Certificate.objects.filter(certificate_id=certificate_id).exists():
-            return Response({"error": "Certificate ID already exists"}, status=400)
+    if not student_name or not student_email or not course_title or not certificate_id:
+        return Response({"error": "All fields are required"}, status=400)
 
-        # FIRST certificate save cheyyadam
+    if Certificate.objects.filter(certificate_id=certificate_id).exists():
+        return Response({"error": "Certificate ID already exists"}, status=400)
+
+    try:
         Certificate.objects.create(
             student_name=student_name,
             student_email=student_email,
@@ -43,12 +44,15 @@ def certificate_list_create(request):
             certificate_id=certificate_id,
             status=status,
         )
+    except Exception as e:
+        print("CERTIFICATE SAVE ERROR:", str(e))
+        return Response({"error": f"Save failed: {str(e)}"}, status=500)
 
-        # NEXT mail try cheyyadam
-        try:
-            send_mail(
-                subject="Certificate Issued Successfully",
-                message=f"""Hello {student_name},
+    # Mail try chestham, fail ayina parledhu
+    try:
+        send_mail(
+            subject="Certificate Issued Successfully",
+            message=f"""Hello {student_name},
 
 Your certificate has been issued successfully.
 
@@ -63,23 +67,14 @@ https://digital-certificate-issue.vercel.app/student-login
 Regards,
 Admin
 """,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[student_email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            print("MAIL ERROR:", str(e))
-
-        # MAIL fail ayina certificate issue success avvali
-        return Response(
-            {"message": "Certificate issued successfully ✅"},
-            status=201
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[student_email],
+            fail_silently=True,
         )
+    except Exception as e:
+        print("CERTIFICATE MAIL ERROR:", str(e))
 
-
-@api_view(["POST"])
-def issue_certificate(request):
-    return certificate_list_create(request)
+    return Response({"message": "Certificate issued successfully ✅"}, status=201)
 
 
 @api_view(["GET"])
