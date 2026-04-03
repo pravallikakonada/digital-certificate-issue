@@ -29,9 +29,13 @@ def certificate_list_create(request):
         certificate_id = request.data.get("certificate_id")
         status = request.data.get("status", "Issued")
 
+        if not student_name or not student_email or not course_title or not certificate_id:
+            return Response({"error": "All fields are required"}, status=400)
+
         if Certificate.objects.filter(certificate_id=certificate_id).exists():
             return Response({"error": "Certificate ID already exists"}, status=400)
 
+        # FIRST certificate save cheyyadam
         Certificate.objects.create(
             student_name=student_name,
             student_email=student_email,
@@ -40,15 +44,16 @@ def certificate_list_create(request):
             status=status,
         )
 
+        # NEXT mail try cheyyadam
         try:
             send_mail(
-                subject="Your Certificate Has Been Issued",
+                subject="Certificate Issued Successfully",
                 message=f"""Hello {student_name},
 
-Congratulations! Your certificate has been issued successfully.
+Your certificate has been issued successfully.
 
 Student Name: {student_name}
-Course: {course_title}
+Course Name: {course_title}
 Certificate ID: {certificate_id}
 Status: {status}
 
@@ -63,9 +68,13 @@ Admin
                 fail_silently=True,
             )
         except Exception as e:
-            print("CERTIFICATE MAIL ERROR:", str(e))
+            print("MAIL ERROR:", str(e))
 
-        return Response({"message": "Certificate issued successfully ✅"}, status=201)
+        # MAIL fail ayina certificate issue success avvali
+        return Response(
+            {"message": "Certificate issued successfully ✅"},
+            status=201
+        )
 
 
 @api_view(["POST"])
