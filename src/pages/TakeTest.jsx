@@ -19,7 +19,18 @@ const TakeTest = () => {
 
     const name = params.get("name") || "";
     const email = params.get("email") || "";
-    const course = params.get("course") || "";
+    let course = params.get("course") || "";
+
+    // QUICK FIX: old mail links ni correct course name ki map cheyyadam
+    if (course.trim().toLowerCase() === "python") {
+      course = "Python Programming";
+    }
+    if (course.trim().toLowerCase() === "react") {
+      course = "React Frontend Development";
+    }
+    if (course.trim().toLowerCase() === "full stack") {
+      course = "Full Stack Web Development";
+    }
 
     setStudentName(name);
     setStudentEmail(email);
@@ -85,11 +96,7 @@ const TakeTest = () => {
         `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}`
       );
 
-      navigate(
-        `/student-dashboard?name=${encodeURIComponent(
-          studentName
-        )}&email=${encodeURIComponent(studentEmail)}`
-      );
+      navigate("/student-dashboard");
     } catch (error) {
       console.error("Error submitting exam:", error);
       alert("Failed to submit exam ❌");
