@@ -45,8 +45,6 @@ const IssueCertificate = () => {
 
       if (error?.response?.data?.error) {
         alert(error.response.data.error);
-      } else if (error?.response?.data?.message) {
-        alert(error.response.data.message);
       } else if (error?.response?.status) {
         alert(`Server error: ${error.response.status}`);
       } else {
