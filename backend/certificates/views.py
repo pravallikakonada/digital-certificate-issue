@@ -1,52 +1,54 @@
 from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Certificate
 
 
-@api_view(["POST"])
-def issue_certificate(request):
-    student_name = request.data.get("student_name")
-    student_email = request.data.get("student_email")
-    course_title = request.data.get("course_title")
-    certificate_id = request.data.get("certificate_id")
-    status = request.data.get("status", "Issued")
+@api_view(["GET", "POST"])
+def certificate_list_create(request):
+    if request.method == "GET":
+        certificates = Certificate.objects.all()
+        data = []
 
-    if not student_name or not student_email or not course_title or not certificate_id:
-        return Response({"error": "All fields are required"}, status=400)
+        for cert in certificates:
+            data.append({
+                "student_name": cert.student_name,
+                "student_email": cert.student_email,
+                "course_title": cert.course_title,
+                "certificate_id": cert.certificate_id,
+                "status": cert.status,
+            })
 
-    # same student + same course duplicate block
-    existing_certificate = Certificate.objects.filter(
-        student_email=student_email,
-        course_title=course_title
-    ).first()
+        return Response(data)
 
-    if existing_certificate:
-        return Response(
-            {"error": "Certificate already issued for this student and course"},
-            status=400
+    if request.method == "POST":
+        student_name = request.data.get("student_name")
+        student_email = request.data.get("student_email")
+        course_title = request.data.get("course_title")
+        certificate_id = request.data.get("certificate_id")
+        status = request.data.get("status", "Issued")
+
+        if Certificate.objects.filter(certificate_id=certificate_id).exists():
+            return Response({"error": "Certificate ID already exists"}, status=400)
+
+        Certificate.objects.create(
+            student_name=student_name,
+            student_email=student_email,
+            course_title=course_title,
+            certificate_id=certificate_id,
+            status=status,
         )
 
-    if Certificate.objects.filter(certificate_id=certificate_id).exists():
-        return Response({"error": "Certificate ID already exists"}, status=400)
+        try:
+            send_mail(
+                subject="Your Certificate Has Been Issued",
+                message=f"""Hello {student_name},
 
-    cert = Certificate.objects.create(
-        student_name=student_name,
-        student_email=student_email,
-        course_title=course_title,
-        certificate_id=certificate_id,
-        status=status,
-    )
-
-    try:
-        send_mail(
-            subject="Certificate Issued Successfully",
-            message=f"""Hello {student_name},
-
-Your certificate has been issued successfully.
+Congratulations! Your certificate has been issued successfully.
 
 Student Name: {student_name}
-Course Name: {course_title}
+Course: {course_title}
 Certificate ID: {certificate_id}
 Status: {status}
 
@@ -56,14 +58,31 @@ https://digital-certificate-issue.vercel.app/student-login
 Regards,
 Admin
 """,
-            from_email="pravallikakonada984@gmail.com",
-            recipient_list=[student_email],
-            fail_silently=True,
-        )
-    except Exception as e:
-        print("MAIL ERROR:", str(e))
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[student_email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print("CERTIFICATE MAIL ERROR:", str(e))
 
-    return Response(
-        {"message": "Certificate issued successfully ✅"},
-        status=201
-    )
+        return Response({"message": "Certificate issued successfully ✅"}, status=201)
+
+
+@api_view(["POST"])
+def issue_certificate(request):
+    return certificate_list_create(request)
+
+
+@api_view(["GET"])
+def verify_certificate(request, certificate_id):
+    try:
+        cert = Certificate.objects.get(certificate_id=certificate_id)
+        return Response({
+            "student_name": cert.student_name,
+            "student_email": cert.student_email,
+            "course_title": cert.course_title,
+            "certificate_id": cert.certificate_id,
+            "status": cert.status,
+        })
+    except Certificate.DoesNotExist:
+        return Response({"error": "Certificate not found"}, status=404)

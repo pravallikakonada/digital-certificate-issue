@@ -32,6 +32,9 @@ const CompletedTests = () => {
         student_name: test.student_name,
         student_email: test.student_email,
         course_title: test.course_title,
+        score: test.score,
+        total_questions: test.total_questions,
+        result: test.result,
       },
     });
   };
@@ -39,9 +42,10 @@ const CompletedTests = () => {
   return (
     <>
       <Header />
+
       <div style={container}>
         <div style={card}>
-          <h2>Completed Tests</h2>
+          <h2 style={title}>Completed Tests</h2>
 
           {loading ? (
             <p>Loading...</p>
@@ -55,10 +59,11 @@ const CompletedTests = () => {
                 <p><b>Course:</b> {test.course_title}</p>
                 <p><b>Score:</b> {test.score}/{test.total_questions}</p>
                 <p><b>Result:</b> {test.result}</p>
+                <p><b>Status:</b> {test.status}</p>
 
                 {test.result === "Passed" && (
                   <button
-                    style={btn}
+                    style={issueBtn}
                     onClick={() => handleIssueCertificate(test)}
                   >
                     Issue Certificate
@@ -88,14 +93,20 @@ const card = {
   boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
 };
 
-const testBox = {
-  border: "1px solid #ddd",
-  borderRadius: "10px",
-  padding: "16px",
-  marginBottom: "15px",
+const title = {
+  marginBottom: "20px",
+  color: "#1e3a8a",
 };
 
-const btn = {
+const testBox = {
+  border: "1px solid #ddd",
+  borderRadius: "12px",
+  padding: "16px",
+  marginBottom: "16px",
+  background: "#f9fafb",
+};
+
+const issueBtn = {
   marginTop: "10px",
   padding: "10px 16px",
   background: "#16a34a",
@@ -103,6 +114,7 @@ const btn = {
   border: "none",
   borderRadius: "8px",
   cursor: "pointer",
+  fontWeight: "600",
 };
 
 export default CompletedTests;
