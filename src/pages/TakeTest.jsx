@@ -93,7 +93,7 @@ const TakeTest = () => {
       });
 
       alert(
-        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}`
+        `Test completed successfully ✅\nScore: ${score}/${questions.length}\nResult: ${finalResult}\n Pleease wait for next process. Admin will review  and issue your certifiacate.`
       );
 
       navigate("/student-dashboard");

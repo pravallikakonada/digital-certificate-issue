@@ -1,38 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 
 const API = "https://certificate-backend-mxjt.onrender.com/api/certificates/";
 
 const IssueCertificate = () => {
-  const location = useLocation();
-
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [courseTitle, setCourseTitle] = useState("");
-  const [certificateId, setCertificateId] = useState("");
+  const [certificateId, setCertificateId] = useState(
+    "CERT-" + Math.floor(1000 + Math.random() * 9000)
+  );
   const [status, setStatus] = useState("Issued");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (location.state) {
-      setStudentName(location.state.student_name || "");
-      setStudentEmail(location.state.student_email || "");
-      setCourseTitle(location.state.course_title || "");
-    }
-
-    const randomId = "CERT-" + Math.floor(1000 + Math.random() * 9000);
-    setCertificateId(randomId);
-  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!studentName || !studentEmail || !courseTitle) {
+      alert("All fields fill cheyyi");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      await axios.post(API, {
+      const response = await axios.post(API, {
         student_name: studentName,
         student_email: studentEmail,
         course_title: courseTitle,
@@ -40,10 +33,21 @@ const IssueCertificate = () => {
         status: status,
       });
 
-      alert("Certificate issued successfully ✅");
+      console.log(response.data);
+      alert("Certificate issued and mail sent successfully ✅");
+
+      setStudentName("");
+      setStudentEmail("");
+      setCourseTitle("");
+      setCertificateId("CERT-" + Math.floor(1000 + Math.random() * 9000));
+      setStatus("Issued");
     } catch (error) {
-      console.error("Error issuing certificate:", error);
-      alert("Certificate issue avvaledu ❌");
+      console.error("Issue certificate error:", error?.response?.data || error);
+      if (error?.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("Certificate issue avvaledu ❌");
+      }
     } finally {
       setLoading(false);
     }
@@ -60,26 +64,26 @@ const IssueCertificate = () => {
           <form onSubmit={handleSubmit}>
             <input
               type="text"
-              value={studentName}
-              readOnly
-              style={input}
               placeholder="Student Name"
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              style={input}
             />
 
             <input
               type="email"
-              value={studentEmail}
-              readOnly
-              style={input}
               placeholder="Student Email"
+              value={studentEmail}
+              onChange={(e) => setStudentEmail(e.target.value)}
+              style={input}
             />
 
             <input
               type="text"
-              value={courseTitle}
-              readOnly
-              style={input}
               placeholder="Course Title"
+              value={courseTitle}
+              onChange={(e) => setCourseTitle(e.target.value)}
+              style={input}
             />
 
             <input
@@ -87,7 +91,6 @@ const IssueCertificate = () => {
               value={certificateId}
               readOnly
               style={input}
-              placeholder="Certificate ID"
             />
 
             <input
@@ -95,7 +98,6 @@ const IssueCertificate = () => {
               value={status}
               readOnly
               style={input}
-              placeholder="Status"
             />
 
             <button type="submit" style={btn} disabled={loading}>
