@@ -14,26 +14,45 @@ const TakeTest = () => {
   const [courseTitle, setCourseTitle] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const normalizeCourseTitle = (course) => {
+    const value = (course || "").trim().toLowerCase();
+
+    const courseMap = {
+      python: "Python Programming",
+      "python programming": "Python Programming",
+
+      react: "React Frontend Development",
+      "react frontend development": "React Frontend Development",
+
+      full: "Full Stack Web Development",
+      "full stack": "Full Stack Web Development",
+      "full stack web development": "Full Stack Web Development",
+    };
+
+    return courseMap[value] || course;
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
     const name = params.get("name") || "";
     const email = params.get("email") || "";
-    const course = params.get("course") || "";
+    const rawCourse = params.get("course") || "";
+    const finalCourse = normalizeCourseTitle(rawCourse);
 
     setStudentName(name);
     setStudentEmail(email);
-    setCourseTitle(course);
+    setCourseTitle(finalCourse);
 
     const fetchQuestions = async () => {
       try {
-        if (!course.trim()) {
+        if (!finalCourse.trim()) {
           setLoading(false);
           return;
         }
 
         const response = await axios.get(
-          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(course.trim())}/`
+          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(finalCourse.trim())}/`
         );
 
         setQuestions(response.data || []);
@@ -147,9 +166,7 @@ const TakeTest = () => {
                         name={`question-${q.id}`}
                         value={option}
                         checked={answers[q.id] === option}
-                        onChange={(e) =>
-                          handleOptionChange(q.id, e.target.value)
-                        }
+                        onChange={(e) => handleOptionChange(q.id, e.target.value)}
                       />
                       {" "}{option}
                     </label>
