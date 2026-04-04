@@ -1,10 +1,21 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+# Load root-level .env values if present
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    for line in env_file.read_text().splitlines():
+        if not line or line.startswith('#'):
+            continue
+        key, _, value = line.partition('=')
+        if key and value:
+            os.environ.setdefault(key.strip(), value.strip())
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-your-secret-key')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -92,10 +103,15 @@ CORS_ALLOW_ALL_ORIGINS = True
 # EMAIL SETTINGS (IMPORTANT)
 # =========================
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "pravallikakonada984@gmail.com"
-EMAIL_HOST_PASSWORD = "pvrh wkfv yqeu myja"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'pravallikakonada984@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'pvrh wkfv yqeu myja')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
+# Gmail SMTP note:
+# If using Gmail, set up an app password for this account and do not rely on normal login credentials.
+# Ensure the account allows SMTP access and that the password is valid for sending email.

@@ -14,7 +14,7 @@ const VerifyCertificate = () => {
     setError("");
 
     if (!certificateId.trim()) {
-      alert("Certificate ID enter cheyyi");
+      alert("Please enter a certificate ID");
       return;
     }
 

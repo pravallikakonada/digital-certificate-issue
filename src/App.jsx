@@ -40,9 +40,7 @@ const App = () => {
         <Route
           path="/manage-courses"
           element={
-            <ProtectedRoute role="admin">
-              <ManageCourses />
-            </ProtectedRoute>
+            <ManageCourses />
           }
         />
 

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE_URL = "https://certificate-backend-mxjt.onrender.com";
+import api from "../services/api";
 
 const TakeTest = () => {
   const navigate = useNavigate();
@@ -51,8 +50,8 @@ const TakeTest = () => {
           return;
         }
 
-        const response = await axios.get(
-          `${API_BASE_URL}/api/exams/questions/${encodeURIComponent(finalCourse.trim())}/`
+        const response = await api.get(
+          `/api/exams/questions/${encodeURIComponent(finalCourse.trim())}/`
         );
 
         setQuestions(response.data || []);
@@ -92,7 +91,7 @@ const TakeTest = () => {
     const finalResult = score >= 3 ? "Passed" : "Failed";
 
     try {
-      await axios.post(`${API_BASE_URL}/api/exams/submit-exam/`, {
+      await api.post(`/api/exams/submit-exam/`, {
         student_name: studentName,
         student_email: studentEmail,
         course_title: courseTitle,

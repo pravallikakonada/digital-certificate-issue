@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import Header from "../components/Header";
 import { useLocation } from "react-router-dom";
 
-const API = "https://certificate-backend-mxjt.onrender.com/api/certificates/issue/";
-const FALLBACK_API = "https://certificate-backend-mxjt.onrender.com/api/certificates/";
+const API = "/api/certificates/issue/";
+const FALLBACK_API = "/api/certificates/";
 
 const IssueCertificate = () => {
   const location = useLocation();
@@ -26,7 +26,7 @@ const IssueCertificate = () => {
     e.preventDefault();
 
     if (!studentName.trim() || !studentEmail.trim() || !courseTitle.trim()) {
-      alert("All fields fill cheyyi");
+      alert("Please fill in all fields");
       return;
     }
 
@@ -44,7 +44,7 @@ const IssueCertificate = () => {
       let response;
 
       try {
-        response = await axios.post(API, payload, {
+        response = await api.post(API, payload, {
           timeout: 120000,
         });
       } catch (firstError) {
@@ -52,7 +52,7 @@ const IssueCertificate = () => {
           firstError?.response?.status === 404 ||
           firstError?.response?.status === 405
         ) {
-          response = await axios.post(FALLBACK_API, payload, {
+          response = await api.post(FALLBACK_API, payload, {
             timeout: 180000,
           });
         } else {
@@ -61,6 +61,17 @@ const IssueCertificate = () => {
       }
 
       alert(response?.data?.message || "Certificate issued successfully and mail sent ");
+
+      // Update exam submission status to "Certificate Issued"
+      try {
+        await api.post("/api/exams/update-status/", {
+          submission_id: location.state?.submission_id,
+          status: "Certificate Issued"
+        });
+      } catch (statusError) {
+        console.error("Failed to update exam status:", statusError);
+        // Don't show error to user as certificate was already issued successfully
+      }
 
       setStudentName("");
       setStudentEmail("");
@@ -71,13 +82,13 @@ const IssueCertificate = () => {
       console.error("Issue certificate error:", error?.response?.data || error);
 
       if (error.code === "ECONNABORTED") {
-        alert("Server timeout ayindi. My Certificates check cheyyi ✅");
+        alert("Server timeout occurred. Please check My Certificates ✅");
       } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else if (error?.response?.status) {
         alert(`Server error: ${error.response.status}`);
       } else {
-        alert("Certificate issue avvaledu ❌");
+        alert("Failed to issue certificate ❌");
       }
     } finally {
       setLoading(false);

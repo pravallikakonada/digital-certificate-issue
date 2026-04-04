@@ -49,6 +49,7 @@ def issue_certificate(request):
         return Response({"error": f"Save failed: {str(e)}"}, status=500)
 
     try:
+        print(f"Sending email to {student_email} for certificate {certificate_id}")
         send_mail(
             subject="Certificate Issued Successfully",
             message=f"""Hello {student_name},
@@ -66,10 +67,11 @@ https://digital-certificate-issue.vercel.app/student-login
 Regards,
 Admin
 """,
-            from_email=None,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[student_email],
             fail_silently=False,
         )
+        print(f"Email sent successfully to {student_email}")
         return Response(
             {
                 "message": "Certificate issued successfully and mail sent ✅",
@@ -79,14 +81,17 @@ Admin
         )
     except Exception as e:
         print("CERTIFICATE MAIL ERROR:", str(e))
-
-    return Response(
-        {
-            "message": "Certificate issued successfully ✅",
-            "mail_sent": False
-        },
-        status=201
-    )
+        print("Error type:", type(e).__name__)
+        import traceback
+        print("Traceback:", traceback.format_exc())
+        return Response(
+            {
+                "message": "Certificate issued successfully ✅",
+                "mail_sent": False,
+                "error": str(e)
+            },
+            status=201
+        )
 
 
 @api_view(["GET"])
