@@ -65,3 +65,31 @@ def login(request):
         },
         status=status.HTTP_200_OK
     )
+
+
+@api_view(["POST"])
+def admin_login(request):
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if not email or not password:
+        return Response(
+            {"error": "Email and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Simple admin login for project demo
+    if email == "admin@gmail.com" and password == "admin123":
+        return Response(
+            {
+                "message": "Admin login successful",
+                "email": email,
+                "role": "admin"
+            },
+            status=status.HTTP_200_OK
+        )
+
+    return Response(
+        {"error": "Invalid admin credentials"},
+        status=status.HTTP_400_BAD_REQUEST
+    )

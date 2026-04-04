@@ -53,14 +53,14 @@ const IssueCertificate = () => {
           firstError?.response?.status === 405
         ) {
           response = await axios.post(FALLBACK_API, payload, {
-            timeout: 120000,
+            timeout: 180000,
           });
         } else {
           throw firstError;
         }
       }
 
-      alert(response?.data?.message || "Certificate issued successfully ✅");
+      alert(response?.data?.message || "Certificate issued successfully and mail sent ");
 
       setStudentName("");
       setStudentEmail("");
@@ -71,7 +71,7 @@ const IssueCertificate = () => {
       console.error("Issue certificate error:", error?.response?.data || error);
 
       if (error.code === "ECONNABORTED") {
-        alert("Certificate create ayye chance undi. My Certificates check cheyyi ✅");
+        alert("Server timeout ayindi. My Certificates check cheyyi ✅");
       } else if (error?.response?.data?.error) {
         alert(error.response.data.error);
       } else if (error?.response?.status) {
@@ -115,14 +115,12 @@ const IssueCertificate = () => {
               onChange={(e) => setCourseTitle(e.target.value)}
               style={input}
             />
-
-            <input
-              type="text"
-              value={certificateId}
-              readOnly
-              style={input}
-            />
-
+<input
+  type="text"
+  value={certificateId}
+  onChange={(e) => setCertificateId(e.target.value)}
+  style={input}
+/>
             <input
               type="text"
               value={status}
