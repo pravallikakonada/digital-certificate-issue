@@ -13,9 +13,6 @@ const CompletedTests = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // "all", "passed", "failed"
   const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [autoRefreshing, setAutoRefreshing] = useState(false);
-  const [previousCount, setPreviousCount] = useState(0);
-  const [newTestsNotification, setNewTestsNotification] = useState("");
 
   const applyFilterToTests = (testData, filterType) => {
     if (filterType === "all") {
@@ -24,12 +21,10 @@ const CompletedTests = () => {
     return testData.filter(test => test.result === (filterType === "passed" ? "Passed" : "Failed"));
   };
 
-  const fetchTests = async (isAutoRefresh = false) => {
+  const fetchTests = async () => {
     try {
-      console.log("Fetching completed tests, autoRefresh:", isAutoRefresh);
-      if (isAutoRefresh) {
-        setAutoRefreshing(true);
-      }
+      console.log("Fetching completed tests");
+      setLoading(true);
       const res = await api.get(COMPLETED_TESTS_API);
       const testData = res.data || [];
       console.log("Fetched test data:", testData);
@@ -40,31 +35,14 @@ const CompletedTests = () => {
         result: test.result || (test.score >= 3 ? "Passed" : "Failed")
       }));
 
-      // Check for new tests
-      const newCount = processedData.length;
-      if (isAutoRefresh && newCount > previousCount && previousCount > 0) {
-        const newTestsCount = newCount - previousCount;
-        setNewTestsNotification(`${newTestsCount} new test${newTestsCount > 1 ? 's' : ''} completed! 🎉`);
-        // Clear notification after 5 seconds
-        setTimeout(() => setNewTestsNotification(""), 5000);
-      }
-      setPreviousCount(newCount);
-
       setTests(processedData);
       setFilteredTests(applyFilterToTests(processedData, filter));
       setLastRefresh(new Date());
     } catch (error) {
       console.error("Error fetching completed tests:", error);
-      if (!isAutoRefresh) {
-        alert("Failed to load completed tests");
-      }
+      alert("Failed to load completed tests");
     } finally {
-      if (!isAutoRefresh) {
-        setLoading(false);
-      }
-      if (isAutoRefresh) {
-        setAutoRefreshing(false);
-      }
+      setLoading(false);
     }
   };
 
@@ -91,12 +69,6 @@ const CompletedTests = () => {
 
   useEffect(() => {
     fetchTests();
-
-    // Set up polling to refresh data every 2 seconds for real-time updates
-    const interval = setInterval(() => fetchTests(true), 2000);
-
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -107,10 +79,6 @@ const CompletedTests = () => {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-          @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-10px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
         `}
       </style>
       <Header />
@@ -118,30 +86,23 @@ const CompletedTests = () => {
       <div style={container}>
         <div style={content}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h1 style={title}>Completed Tests Testing...</h1>
+          <h1 style={title}>Completed Tests</h1>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
               Last updated: {lastRefresh.toLocaleTimeString()}
-              {autoRefreshing && <span style={{ color: "#3b82f6", marginLeft: "5px" }}>⟳</span>}
             </span>
             <button
               type="button"
               style={refreshBtn}
-              onClick={() => fetchTests(false)}
-              disabled={loading || autoRefreshing}
+              onClick={() => fetchTests()}
+              disabled={loading}
             >
-              {loading || autoRefreshing ? "Refreshing..." : "🔄 Refresh"}
+              {loading ? "Refreshing..." : "🔄 Refresh"}
             </button>
           </div>
         </div>
 
-        {/* New Tests Notification */}
-        {newTestsNotification && (
-          <div style={notification}>
-            {newTestsNotification}
-          </div>
-        )}
-          {/* Filter Buttons */}
+        {/* Filter Buttons */}
           <div style={filterContainer}>
             <button
               style={{
@@ -317,18 +278,6 @@ const refreshBtn = {
   fontWeight: "600",
   fontSize: "0.9rem",
   transition: "all 0.2s",
-};
-
-const notification = {
-  background: "#dbeafe",
-  color: "#1e40af",
-  padding: "12px 16px",
-  borderRadius: "8px",
-  border: "1px solid #bfdbfe",
-  marginBottom: "20px",
-  fontWeight: "600",
-  textAlign: "center",
-  animation: "fadeIn 0.5s ease-in-out",
 };
 
 const loadingContainer = {
