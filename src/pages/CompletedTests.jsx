@@ -118,7 +118,7 @@ const CompletedTests = () => {
       <div style={container}>
         <div style={content}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h1 style={title}>Completed Tests</h1>
+          <h1 style={title}>Completed Tests Testing...</h1>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
               Last updated: {lastRefresh.toLocaleTimeString()}
