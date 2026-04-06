@@ -1,8 +1,31 @@
-from django.core.mail import send_mail
+import traceback
+from django.core.mail import EmailMessage, get_connection
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Certificate
+
+
+def get_email_connection():
+    """Get email connection based on configured backend"""
+    if 'console' in settings.EMAIL_BACKEND.lower():
+        # Console backend - no connection needed
+        return get_connection()
+    elif 'locmem' in settings.EMAIL_BACKEND.lower():
+        # In-memory backend for testing
+        return get_connection()
+    else:
+        # SMTP backend
+        return get_connection(
+            backend=settings.EMAIL_BACKEND,
+            host=settings.EMAIL_HOST,
+            port=settings.EMAIL_PORT,
+            username=settings.EMAIL_HOST_USER,
+            password=settings.EMAIL_HOST_PASSWORD,
+            use_tls=settings.EMAIL_USE_TLS,
+            use_ssl=settings.EMAIL_USE_SSL,
+            timeout=settings.EMAIL_TIMEOUT,
+        )
 
 
 @api_view(["GET"])
@@ -50,9 +73,9 @@ def issue_certificate(request):
 
     try:
         print(f"Sending email to {student_email} for certificate {certificate_id}")
-        send_mail(
+        email = EmailMessage(
             subject="Certificate Issued Successfully",
-            message=f"""Hello {student_name},
+            body=f"""Hello {student_name},
 
 Your certificate has been issued successfully.
 
@@ -68,9 +91,9 @@ Regards,
 Admin
 """,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[student_email],
-            fail_silently=False,
+            to=[student_email],
         )
+        email.send(fail_silently=False)
         print(f"Email sent successfully to {student_email}")
         return Response(
             {
@@ -80,15 +103,13 @@ Admin
             status=201
         )
     except Exception as e:
-        print("CERTIFICATE MAIL ERROR:", str(e))
-        print("Error type:", type(e).__name__)
-        import traceback
-        print("Traceback:", traceback.format_exc())
+        print("CERTIFICATE MAIL ERROR:", type(e).__name__, str(e))
+        traceback.print_exc()
         return Response(
             {
                 "message": "Certificate issued successfully ✅",
                 "mail_sent": False,
-                "error": str(e)
+                "error": f"{type(e).__name__}: {str(e)}"
             },
             status=201
         )

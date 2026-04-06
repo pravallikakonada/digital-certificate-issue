@@ -5,6 +5,13 @@ import axios from "axios";
 const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "";
 const baseURL = rawBaseURL.replace(/\/+$/, "");
 
+if (import.meta.env.PROD && !rawBaseURL) {
+  console.warn(
+    "VITE_API_BASE_URL is not set in production. API requests will use relative paths. " +
+    "If your backend is hosted separately, set VITE_API_BASE_URL to the backend API base URL."
+  );
+}
+
 console.log("API Configuration:", {
   VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
   calculatedBaseURL: baseURL,
