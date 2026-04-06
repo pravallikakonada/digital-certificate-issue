@@ -1,6 +1,13 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
+# Import dotenv with fallback for IDE compatibility
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    # Fallback if dotenv is not available (shouldn't happen in production)
+    def load_dotenv(*args, **kwargs):
+        pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
