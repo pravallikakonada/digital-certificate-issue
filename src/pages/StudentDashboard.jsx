@@ -19,7 +19,7 @@ const StudentDashboard = () => {
       <div
         style={{
           minHeight: "100vh",
-          background: "#eef4ff",
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #334155 100%)",
           padding: "30px",
           fontFamily: "Arial, sans-serif",
         }}
@@ -28,14 +28,15 @@ const StudentDashboard = () => {
           style={{
             maxWidth: "900px",
             margin: "0 auto",
-            background: "#fff",
+            background: "#1e293b",
             borderRadius: "20px",
             padding: "35px",
-            boxShadow: "0 15px 35px rgba(0,0,0,0.08)",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4)",
+            border: "1px solid #334155",
           }}
         >
-          <h1 style={{ color: "#1e3a8a", marginTop: 0 }}>Student Dashboard</h1>
-          <p style={{ color: "#4b5563", fontSize: "18px" }}>
+          <h1 style={{ color: "#f1f5f9", marginTop: 0 }}>Student Dashboard</h1>
+          <p style={{ color: "#cbd5e1", fontSize: "18px" }}>
             Welcome to student portal. You can view your certificates and verify certificate details here.
           </p>
 
@@ -66,12 +67,13 @@ const btnPrimary = {
 };
 
 const btnSecondary = {
-  background: "#e5e7eb",
-  color: "#111827",
+  background: "#334155",
+  color: "#e2e8f0",
   textDecoration: "none",
   padding: "12px 22px",
   borderRadius: "10px",
   fontWeight: "600",
+  border: "1px solid #475569",
 };
 
 export default StudentDashboard;

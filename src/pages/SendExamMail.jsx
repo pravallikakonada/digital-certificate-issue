@@ -63,12 +63,20 @@ const SendExamMail = () => {
         setStudentEmail("");
         setSelectedCourse("");
       } catch (error) {
-        console.error("Error sending exam:", error?.response?.data || error);
+        console.error("Error sending exam:", error);
+        console.error("Axios error details:", {
+          message: error.message,
+          code: error.code,
+          response: error?.response,
+          request: error?.request,
+        });
 
         if (error.code === "ECONNABORTED") {
           alert("Server response timeout");
         } else if (error?.response?.data?.error) {
           alert(error.response.data.error);
+        } else if (error?.message) {
+          alert(`Failed to send email: ${error.message}`);
         } else {
           alert("Failed to send email");
         }

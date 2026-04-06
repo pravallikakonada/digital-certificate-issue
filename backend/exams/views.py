@@ -58,7 +58,7 @@ Admin
         )
 
         return Response(
-            {"message": "Exam mail sent successfully ✅", "mail_sent": True},
+            {"message": "Exam mail sent successfully ", "mail_sent": True},
             status=200
         )
 
@@ -166,7 +166,12 @@ Admin
 @api_view(["GET"])
 def completed_tests(request):
     try:
-        submissions = ExamSubmission.objects.all().order_by('-submitted_at')
+        # Get completed submissions that have corresponding exam invitations (students who were invited via email)
+        submissions = ExamSubmission.objects.filter(
+            status="Completed",
+            student_email__in=ExamInvitation.objects.values_list('student_email', flat=True)
+        ).order_by('-submitted_at')
+
         data = []
 
         for submission in submissions:
@@ -180,6 +185,7 @@ def completed_tests(request):
                 "result": submission.result,
                 "eligible_for_certificate": submission.eligible_for_certificate,
                 "status": submission.status,
+                "started_at": submission.started_at,
                 "submitted_at": submission.submitted_at,
             })
 
@@ -199,6 +205,7 @@ def submit_exam(request):
         score = request.data.get("score")
         total_questions = request.data.get("total_questions")
         result = request.data.get("result")
+        started_at = request.data.get("started_at")
 
         if not all([student_name, student_email, course_title, score is not None, total_questions, result]):
             return Response({"error": "All fields are required"}, status=400)
@@ -215,7 +222,8 @@ def submit_exam(request):
             total_questions=total_questions,
             result=result,
             eligible_for_certificate=eligible_for_certificate,
-            status="Completed"
+            status="Completed",
+            started_at=started_at
         )
 
         return Response({
@@ -253,3 +261,27 @@ def update_exam_status(request):
     except Exception as e:
         print("UPDATE EXAM STATUS ERROR:", str(e))
         return Response({"error": f"Failed to update exam status: {str(e)}"}, status=500)
+
+
+@api_view(["GET"])
+def get_questions(request, course_title):
+    try:
+        questions = Question.objects.filter(course_title=course_title)
+        data = []
+
+        for question in questions:
+            data.append({
+                "id": question.id,
+                "question_text": question.question_text,
+                "option1": question.option1,
+                "option2": question.option2,
+                "option3": question.option3,
+                "option4": question.option4,
+                "correct_answer": question.correct_answer,
+            })
+
+        return Response(data, status=200)
+
+    except Exception as e:
+        print("GET QUESTIONS ERROR:", str(e))
+        return Response({"error": f"Failed to fetch questions: {str(e)}"}, status=500)

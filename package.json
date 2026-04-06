@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite",
     "dev:5173": "vite --port 5173",
-    "dev:free": "node scripts/free-port.js && vite --port 3000",
+    "dev:free": "node scripts/free-port.js && vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

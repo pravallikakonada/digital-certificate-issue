@@ -1,3 +1,15 @@
+"""
+DEPRECATED: This script creates FAKE sample exam submissions for testing only.
+
+WARNING: Do NOT run this script in production. It will pollute your database with 
+fake student test submissions that have nothing to do with real student progress.
+
+If you've already run this and want to remove the fake data, run:
+    python clean_sample_data.py
+
+For local development testing only - use only if you understand the consequences.
+"""
+
 import os
 import django
 
@@ -6,7 +18,7 @@ django.setup()
 
 from backend.exams.models import ExamSubmission
 
-# Create sample exam submissions
+# FAKE sample exam submissions - DO NOT USE IN PRODUCTION
 submissions = [
     {
         'student_name': 'John Doe',

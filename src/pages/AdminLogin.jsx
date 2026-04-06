@@ -115,7 +115,7 @@ const AdminLogin = () => {
 
 const container = {
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #e0ecff 0%, #f8fbff 100%)",
+  background: "linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #334155 100%)",
   display: "grid",
   gridTemplateColumns: "1.2fr 1fr",
   gap: "20px",
@@ -130,25 +130,26 @@ const leftSection = {
 
 const badge = {
   display: "inline-block",
-  background: "#dbeafe",
-  color: "#1e3a8a",
+  background: "#334155",
+  color: "#f1f5f9",
   padding: "8px 14px",
   borderRadius: "999px",
   fontSize: "12px",
   fontWeight: "700",
   letterSpacing: "1px",
   marginBottom: "18px",
+  border: "1px solid #475569",
 };
 
 const title = {
   fontSize: "42px",
-  color: "#1e3a8a",
+  color: "#f1f5f9",
   margin: "0 0 12px 0",
   lineHeight: "1.2",
 };
 
 const subtitle = {
-  color: "#475569",
+  color: "#cbd5e1",
   fontSize: "17px",
   maxWidth: "560px",
   lineHeight: "1.7",
@@ -163,12 +164,12 @@ const infoBox = {
 };
 
 const infoCard = {
-  background: "white",
+  background: "#1e293b",
   borderRadius: "18px",
   padding: "18px",
-  boxShadow: "0 8px 22px rgba(30, 58, 138, 0.08)",
+  boxShadow: "0 8px 22px rgba(0, 0, 0, 0.3)",
   textAlign: "center",
-  border: "1px solid #dbeafe",
+  border: "1px solid #334155",
 };
 
 const infoIcon = {
@@ -180,7 +181,7 @@ const infoIcon = {
 const infoText = {
   margin: 0,
   fontWeight: "600",
-  color: "#1e3a8a",
+  color: "#e2e8f0",
 };
 
 const rightSection = {
@@ -191,22 +192,22 @@ const rightSection = {
 const card = {
   width: "100%",
   maxWidth: "430px",
-  background: "white",
+  background: "#1e293b",
   padding: "32px",
   borderRadius: "24px",
-  boxShadow: "0 18px 40px rgba(30, 58, 138, 0.12)",
-  border: "1px solid #dbeafe",
+  boxShadow: "0 18px 40px rgba(0, 0, 0, 0.4)",
+  border: "1px solid #334155",
 };
 
 const cardTitle = {
   margin: "0 0 8px 0",
-  color: "#1e3a8a",
+  color: "#f1f5f9",
   fontSize: "30px",
 };
 
 const cardSubtitle = {
   margin: "0 0 22px 0",
-  color: "#64748b",
+  color: "#94a3b8",
   fontSize: "15px",
 };
 
@@ -215,10 +216,12 @@ const input = {
   padding: "14px",
   marginBottom: "14px",
   borderRadius: "12px",
-  border: "1px solid #cbd5e1",
+  border: "1px solid #475569",
   boxSizing: "border-box",
   fontSize: "15px",
   outline: "none",
+  background: "#334155",
+  color: "#f1f5f9",
 };
 
 const btn = {

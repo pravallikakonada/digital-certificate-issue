@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Header from "../components/Header";
 
@@ -6,6 +7,7 @@ const COMPLETED_TESTS_API = "/api/exams/completed-tests/";
 const UPDATE_STATUS_API = "/api/exams/update-status/";
 
 const CompletedTests = () => {
+  const navigate = useNavigate();
   const [tests, setTests] = useState([]);
   const [filteredTests, setFilteredTests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,13 +17,22 @@ const CompletedTests = () => {
   const [previousCount, setPreviousCount] = useState(0);
   const [newTestsNotification, setNewTestsNotification] = useState("");
 
+  const applyFilterToTests = (testData, filterType) => {
+    if (filterType === "all") {
+      return testData;
+    }
+    return testData.filter(test => test.result === (filterType === "passed" ? "Passed" : "Failed"));
+  };
+
   const fetchTests = async (isAutoRefresh = false) => {
     try {
+      console.log("Fetching completed tests, autoRefresh:", isAutoRefresh);
       if (isAutoRefresh) {
         setAutoRefreshing(true);
       }
       const res = await api.get(COMPLETED_TESTS_API);
       const testData = res.data || [];
+      console.log("Fetched test data:", testData);
 
       // Ensure each test has a result based on score if missing
       const processedData = testData.map(test => ({
@@ -40,7 +51,7 @@ const CompletedTests = () => {
       setPreviousCount(newCount);
 
       setTests(processedData);
-      setFilteredTests(processedData);
+      setFilteredTests(applyFilterToTests(processedData, filter));
       setLastRefresh(new Date());
     } catch (error) {
       console.error("Error fetching completed tests:", error);
@@ -70,19 +81,11 @@ const CompletedTests = () => {
 
   const handleIssueCertificate = async (test) => {
     try {
-      // Update the exam status to "Certificate Issued"
-      await api.post(UPDATE_STATUS_API, {
-        submission_id: test.id,
-        status: "Certificate Issued"
-      });
-
-      // Refresh the tests to show the updated status
-      await fetchTests();
-      
-      alert(`Certificate issued successfully for ${test.student_name}!`);
+      // Navigate to /issue page for certificate issuance
+      navigate('/issue');
     } catch (error) {
-      console.error("Error issuing certificate:", error);
-      alert("Failed to issue certificate. Please try again.");
+      console.error("Error navigating to issue page:", error);
+      alert("Failed to navigate to certificate issuance page. Please try again.");
     }
   };
 
@@ -92,6 +95,7 @@ const CompletedTests = () => {
     // Set up polling to refresh data every 2 seconds for real-time updates
     const interval = setInterval(() => fetchTests(true), 2000);
 
+    // Cleanup interval on unmount
     return () => clearInterval(interval);
   }, []);
 
@@ -121,6 +125,7 @@ const CompletedTests = () => {
               {autoRefreshing && <span style={{ color: "#3b82f6", marginLeft: "5px" }}>⟳</span>}
             </span>
             <button
+              type="button"
               style={refreshBtn}
               onClick={() => fetchTests(false)}
               disabled={loading || autoRefreshing}
@@ -220,6 +225,20 @@ const CompletedTests = () => {
                       <span style={label}>Score:</span>
                       <span style={scoreValue}>
                         {test.score}/{test.total_questions}
+                      </span>
+                    </div>
+
+                    <div style={infoRow}>
+                      <span style={label}>Started At:</span>
+                      <span style={value}>
+                        {test.started_at ? new Date(test.started_at).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+
+                    <div style={infoRow}>
+                      <span style={label}>Submitted At:</span>
+                      <span style={value}>
+                        {new Date(test.submitted_at).toLocaleString()}
                       </span>
                     </div>
                   </div>

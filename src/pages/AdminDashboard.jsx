@@ -49,11 +49,6 @@ const AdminDashboard = () => {
             <p style={cardText}>Generate and issue certificates to students.</p>
           </Link>
 
-          <Link to="/upload-csv" style={card}>
-            <div style={icon}>📂</div>
-            <h3 style={cardTitle}>Upload CSV</h3>
-            <p style={cardText}>Upload bulk student or exam-related data.</p>
-          </Link>
 
           <Link to="/verify" style={card}>
             <div style={icon}>🔍</div>

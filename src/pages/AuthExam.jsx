@@ -85,7 +85,7 @@ const AuthExam = () => {
       localStorage.setItem("studentName", loginResponse.data.name || name);
       localStorage.setItem("role", "student");
 
-      alert(isSignup ? "Signup/Login successful ✅" : "Login successful ✅");
+      alert(isSignup ? "Signup/Login successful " : "Login successful ");
       goToTest();
     } catch (err) {
       const msg =

@@ -11,7 +11,7 @@ const Dashboard = () => {
 
       <div style={{ padding: "30px", fontFamily: "Arial" }}>
         <h2>Dashboard</h2>
-        <p>Login successful ✅</p>
+        <p>Login successful </p>
         <p>Welcome: {email}</p>
 
         <button

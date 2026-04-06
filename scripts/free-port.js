@@ -1,4 +1,6 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
+import { platform } from 'os';
+
 const ports = [3000, 5173, 5174, 5175, 5176, 5177, 5178];
 
 console.log('🔍 Checking for processes using common dev ports...');

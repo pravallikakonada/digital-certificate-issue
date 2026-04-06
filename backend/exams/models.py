@@ -36,6 +36,7 @@ class ExamSubmission(models.Model):
     result = models.CharField(max_length=50, default="Failed")
     eligible_for_certificate = models.BooleanField(default=False)
     status = models.CharField(max_length=50, default="Completed")
+    started_at = models.DateTimeField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
