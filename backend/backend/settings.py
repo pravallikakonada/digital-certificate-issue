@@ -1,17 +1,12 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load root-level .env values if present
-env_file = BASE_DIR / '.env'
-if env_file.exists():
-    for line in env_file.read_text().splitlines():
-        if not line or line.startswith('#'):
-            continue
-        key, _, value = line.partition('=')
-        if key and value:
-            os.environ.setdefault(key.strip(), value.strip())
+# Load environment variables from .env files
+load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR.parent / '.env')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-your-secret-key')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'

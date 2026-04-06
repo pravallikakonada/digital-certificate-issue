@@ -5,6 +5,13 @@ import axios from "axios";
 const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "";
 const baseURL = rawBaseURL.replace(/\/+$/, "");
 
+console.log("API Configuration:", {
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  calculatedBaseURL: baseURL,
+  isDevelopment: import.meta.env.DEV,
+  isProduction: import.meta.env.PROD,
+});
+
 const api = axios.create({
   baseURL,
 });

@@ -17,14 +17,28 @@ const SendExamMail = () => {
 
   const fetchCourses = async () => {
     try {
+      console.log("Fetching courses from:", COURSE_API);
       const res = await api.get(COURSE_API);
       console.log("COURSES DATA:", res.data);
+      console.log("API Base URL:", api.defaults.baseURL);
 
       const courseList = Array.isArray(res.data) ? res.data : [];
       setCourses(courseList);
+      
+      if (courseList.length === 0) {
+        console.warn("No courses returned from API");
+      }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      alert("Failed to load courses");
+      console.error("API Config:", {
+        baseURL: api.defaults.baseURL,
+        url: COURSE_API,
+        fullURL: api.defaults.baseURL + COURSE_API,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+      });
+      alert(`Failed to load courses: ${error?.response?.status === 404 ? 'API not found' : error?.message || 'Unknown error'}`);
     }
   };
 

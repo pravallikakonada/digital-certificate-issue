@@ -2,3 +2,4 @@ Django
 djangorestframework
 gunicorn
 django-cors-headers
+python-dotenv
