@@ -1,7 +1,5 @@
 import csv
 import io
-import threading
-import traceback
 from urllib.parse import quote
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
@@ -32,80 +30,6 @@ def get_email_connection():
             timeout=settings.EMAIL_TIMEOUT,
         )
 
-def send_single_email_task(invitation_id, student_name, student_email, course_title):
-    """
-    Sends email in a separate thread.
-    """
-    try:
-        exam_link = (
-            f"https://digital-certificate-issue.vercel.app/auth-exam"
-            f"?name={quote(student_name)}"
-            f"&email={quote(student_email)}"
-            f"&course={quote(course_title)}"
-        )
-
-        subject = f"Exam Link for {course_title}"
-        message = f"""Hello {student_name},
-
-You have been invited to take the exam for the course: {course_title}.
-
-Click the link below to start your exam:
-{exam_link}
-
-Regards,
-Admin
-"""
-        # Use default connection (respects EMAIL_BACKEND setting)
-        email = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[student_email],
-        )
-        email.send(fail_silently=False)
-        
-        ExamInvitation.objects.filter(id=invitation_id).update(status="Sent")
-        print(f"SUCCESS: Email sent to {student_email}")
-
-    except Exception as e:
-        print(f"FAILED: Email to {student_email}. Error: {str(e)}")
-        traceback.print_exc()
-        ExamInvitation.objects.filter(id=invitation_id).update(status="Failed")
-
-def send_bulk_emails_task(course_title, csv_data_str):
-    csv_reader = csv.DictReader(io.StringIO(csv_data_str))
-    for row in csv_reader:
-        student_name = row.get('student_name', '').strip() or row.get('name', '').strip()
-        student_email = row.get('student_email', '').strip() or row.get('email', '').strip()
-        
-        if not student_name or not student_email: 
-            continue
-        
-        try:
-            exam_link = (
-                f"https://digital-certificate-issue.vercel.app/auth-exam"
-                f"?name={quote(student_name)}"
-                f"&email={quote(student_email)}"
-                f"&course={quote(course_title)}"
-            )
-            invitation = ExamInvitation.objects.create(
-                student_name=student_name, 
-                student_email=student_email,
-                course_title=course_title, 
-                exam_link=exam_link, 
-                status="Pending"
-            )
-            
-            msg = f"Hello {student_name},\n\nLink: {exam_link}\n\nRegards, Admin"
-            email = EmailMessage(f"Exam: {course_title}", msg, settings.DEFAULT_FROM_EMAIL, [student_email])
-            email.send(fail_silently=False)
-            
-            invitation.status = "Sent"
-            invitation.save()
-        except Exception as e:
-            print(f"BULK ERROR: {str(e)}")
-            traceback.print_exc()
-
 # --- API Views ---
 
 @api_view(["POST"])
@@ -122,39 +46,76 @@ def send_exam_mail(request):
 
         # 3. Prepare Link
         exam_link = (
-            f"https://digital-certificate-issue.vercel.app/auth-exam"
+            f"{settings.FRONTEND_URL}/auth-exam"
             f"?name={quote(student_name)}"
             f"&email={quote(student_email)}"
             f"&course={quote(course_title)}"
         )
 
-        # 4. Save to DB (Try/Except specifically for DB issues)
+        # 4. Try to send email first
+        try:
+            subject = f"Exam Invitation: {course_title}"
+            message = f"""Dear {student_name},
+
+You have been invited to take the examination for the course: {course_title}.
+
+Please click the link below to access your exam:
+
+{exam_link}
+
+Important Instructions:
+- Make sure you have a stable internet connection
+- Complete the exam in one sitting
+- Do not refresh the page during the exam
+- Your progress will be automatically saved
+
+If you have any questions, please contact your instructor.
+
+Best regards,
+Exam Administration Team
+Digital Certificate System
+"""
+            email = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[student_email],
+            )
+            # Add headers to improve deliverability
+            email.extra_headers = {
+                'Reply-To': settings.DEFAULT_FROM_EMAIL,
+                'X-Mailer': 'Django Email System',
+                'X-Priority': '1',
+                'Importance': 'high',
+                'Return-Path': settings.DEFAULT_FROM_EMAIL,
+            }
+            email.send(fail_silently=False)
+            print(f"SUCCESS: Email sent to {student_email}")
+
+        except Exception as email_error:
+            print(f"FAILED: Email to {student_email}. Error: {str(email_error)}")
+            return Response({"error": f"Failed to send email: {str(email_error)}"}, status=500)
+
+        # 5. Save to DB only after email is sent successfully
         try:
             invitation = ExamInvitation.objects.create(
                 student_name=student_name,
                 student_email=student_email,
                 course_title=course_title,
                 exam_link=exam_link,
-                status="Pending"
+                status="Sent"
             )
         except Exception as db_error:
-            # If DB fails, return immediately with details
-            return Response({"error": f"Database save failed: {str(db_error)}"}, status=500)
+            # Email was sent but DB failed - still return success since email went out
+            print(f"WARNING: Email sent but DB save failed: {str(db_error)}")
+            return Response({"message": "Email sent successfully, but database save failed.", "mail_sent": True}, status=200)
 
-        # 5. Start Background Thread
-        thread = threading.Thread(
-            target=send_single_email_task,
-            args=(invitation.id, student_name, student_email, course_title)
-        )
-        thread.daemon = True
-        thread.start()
-
-        # 6. Return Success immediately
-        return Response({"message": "Invitation saved. Email sending in background.", "mail_sent": True}, status=200)
+        # 6. Return Success
+        return Response({"message": "Exam mail sent successfully ✅", "mail_sent": True}, status=200)
 
     except Exception as e:
         # This catches the 500 error and tells you what happened
-        print("CRITICAL ERROR in send_exam_mail:", traceback.format_exc())
+        print("CRITICAL ERROR in send_exam_mail:", str(e))
         return Response({"error": f"Server Crash: {str(e)}"}, status=500)
 
 
@@ -168,12 +129,83 @@ def send_exam_mail_bulk(request):
             return Response({"error": "Course and file required"}, status=400)
 
         csv_data = csv_file.read().decode('utf-8')
-        
-        thread = threading.Thread(target=send_bulk_emails_task, args=(course_title, csv_data))
-        thread.daemon = True
-        thread.start()
+        csv_reader = csv.DictReader(io.StringIO(csv_data))
 
-        return Response({"message": "Bulk processing started."}, status=200)
+        sent_count = 0
+        failed_count = 0
+        errors = []
+
+        for row in csv_reader:
+            student_name = row.get('student_name', '').strip() or row.get('name', '').strip()
+            student_email = row.get('student_email', '').strip() or row.get('email', '').strip()
+
+            if not student_name or not student_email:
+                failed_count += 1
+                errors.append(f"Missing name or email in row")
+                continue
+
+            try:
+                exam_link = (
+                    f"{settings.FRONTEND_URL}/auth-exam"
+                    f"?name={quote(student_name)}"
+                    f"&email={quote(student_email)}"
+                    f"&course={quote(course_title)}"
+                )
+
+                msg = f"""Dear {student_name},
+
+You have been invited to take the examination for the course: {course_title}.
+
+Please click the link below to access your exam:
+
+{exam_link}
+
+Important Instructions:
+- Make sure you have a stable internet connection
+- Complete the exam in one sitting
+- Do not refresh the page during the exam
+- Your progress will be automatically saved
+
+If you have any questions, please contact your instructor.
+
+Best regards,
+Exam Administration Team
+Digital Certificate System
+"""
+
+                email = EmailMessage(f"Exam Link for {course_title}", msg, settings.DEFAULT_FROM_EMAIL, [student_email])
+                # Add headers to improve deliverability
+                email.extra_headers = {
+                    'Reply-To': settings.DEFAULT_FROM_EMAIL,
+                    'X-Mailer': 'Django Email System',
+                    'X-Priority': '1',
+                    'Importance': 'high',
+                    'Return-Path': settings.DEFAULT_FROM_EMAIL,
+                }
+                email.send(fail_silently=False)
+
+                # Save to DB
+                ExamInvitation.objects.create(
+                    student_name=student_name,
+                    student_email=student_email,
+                    course_title=course_title,
+                    exam_link=exam_link,
+                    status="Sent"
+                )
+
+                sent_count += 1
+                print(f"BULK SUCCESS: Email sent to {student_email}")
+
+            except Exception as e:
+                failed_count += 1
+                errors.append(f"Failed to send to {student_email}: {str(e)}")
+                print(f"BULK ERROR: {str(e)}")
+
+        message = f"Bulk email sending completed. Sent: {sent_count}, Failed: {failed_count}"
+        if errors:
+            message += f". Errors: {'; '.join(errors[:3])}"  # Show first 3 errors
+
+        return Response({"message": message, "sent": sent_count, "failed": failed_count}, status=200)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)

@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-
-const API_BASE = "https://certificate-backend-mxjt.onrender.com";
+import api from "../services/api";
 
 const AuthExam = () => {
   const navigate = useNavigate();
@@ -61,7 +59,7 @@ const AuthExam = () => {
         }
 
         try {
-          await axios.post(`${API_BASE}/api/accounts/signup/`, {
+          await api.post("/api/accounts/signup/", {
             name: name.trim(),
             email: email.trim(),
             password: password.trim(),
@@ -76,7 +74,7 @@ const AuthExam = () => {
         }
       }
 
-      const loginResponse = await axios.post(`${API_BASE}/api/accounts/login/`, {
+      const loginResponse = await api.post("/api/accounts/login/", {
         email: email.trim(),
         password: password.trim(),
       });

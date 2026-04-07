@@ -4,7 +4,8 @@ import axios from "axios";
 // Keep absolute paths working with the Vite proxy and avoid duplicate /api/api paths.
 const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "";
 const prodFallbackBaseURL = "https://digital-certificate-backend-csac.onrender.com/api";
-const baseURL = rawBaseURL.replace(/\/+$/, "") || (import.meta.env.PROD ? prodFallbackBaseURL : "");
+const devFallbackBaseURL = "http://127.0.0.1:8000/api";
+const baseURL = rawBaseURL.replace(/\/+$/, "") || (import.meta.env.PROD ? prodFallbackBaseURL : devFallbackBaseURL);
 
 if (import.meta.env.PROD && !rawBaseURL) {
   console.warn(

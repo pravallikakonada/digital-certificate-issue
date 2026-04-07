@@ -118,3 +118,6 @@ EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 30))
 # Gmail SMTP note:
 # If using Gmail, set up an app password for this account and do not rely on normal login credentials.
 # Ensure the account allows SMTP access and that the password is valid for sending email.
+
+# Frontend URL for email links
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')

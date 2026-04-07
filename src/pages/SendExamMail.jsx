@@ -11,12 +11,16 @@ const SendExamMail = () => {
   const [studentEmail, setStudentEmail] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [courses, setCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("single"); // "single" or "bulk"
   const [csvFile, setCsvFile] = useState(null);
 
   const fetchCourses = async () => {
     try {
+      setCoursesLoading(true);
+      setCoursesError(null);
       console.log("Fetching courses from:", COURSE_API);
       const res = await api.get(COURSE_API);
       console.log("COURSES DATA:", res.data);
@@ -27,6 +31,7 @@ const SendExamMail = () => {
       
       if (courseList.length === 0) {
         console.warn("No courses returned from API");
+        setCoursesError("No courses available");
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -38,7 +43,11 @@ const SendExamMail = () => {
         statusText: error?.response?.statusText,
         data: error?.response?.data,
       });
-      alert(`Failed to load courses: ${error?.response?.status === 404 ? 'API not found' : error?.message || 'Unknown error'}`);
+      const errorMsg = `Failed to load courses: ${error?.response?.status === 404 ? 'API not found' : error?.message || 'Unknown error'}`;
+      setCoursesError(errorMsg);
+      alert(errorMsg);
+    } finally {
+      setCoursesLoading(false);
     }
   };
 
@@ -71,7 +80,7 @@ const SendExamMail = () => {
         );
 
         console.log("Send exam response:", response.data);
-        alert("Exam mail sent successfully ✅");
+        alert(response.data.message || "Exam mail sent successfully ✅");
 
         setStudentName("");
         setStudentEmail("");
@@ -119,7 +128,7 @@ const SendExamMail = () => {
         });
 
         console.log("Bulk send exam response:", response.data);
-        alert(`Bulk exam mails sent successfully ✅\nSent to ${response.data.sent_count || 0} students`);
+        alert(response.data.message || `Bulk exam mails sent successfully ✅\nSent to ${response.data.sent || 0} students`);
 
         setCsvFile(null);
         setSelectedCourse("");
@@ -236,14 +245,38 @@ const SendExamMail = () => {
                     onChange={(e) => setSelectedCourse(e.target.value)}
                     style={select}
                     required
+                    disabled={coursesLoading || coursesError}
                   >
-                    <option value="">Select Course</option>
+                    <option value="">
+                      {coursesLoading ? "Loading courses..." : coursesError ? "Error loading courses" : "Select Course"}
+                    </option>
                     {courses.map((course) => (
                       <option key={course.id} value={course.title}>
                         {course.title}
                       </option>
                     ))}
                   </select>
+                  {coursesError && (
+                    <div style={{ marginTop: "10px" }}>
+                      <p style={{ color: "red", marginBottom: "5px", fontSize: "14px" }}>
+                        {coursesError}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={fetchCourses}
+                        style={{
+                          ...submitBtn,
+                          background: "#6b7280",
+                          padding: "8px 16px",
+                          fontSize: "14px",
+                          width: "auto"
+                        }}
+                        disabled={coursesLoading}
+                      >
+                        {coursesLoading ? "Retrying..." : "Retry Loading Courses"}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit" style={submitBtn} disabled={loading}>
