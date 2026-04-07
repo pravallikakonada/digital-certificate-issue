@@ -87,22 +87,56 @@ const SendExamMail = () => {
         setSelectedCourse("");
       } catch (error) {
         console.error("Error sending exam:", error);
-        console.error("Axios error details:", {
-          message: error.message,
-          code: error.code,
-          response: error?.response,
-          request: error?.request,
-        });
-
-        if (error.code === "ECONNABORTED") {
-          alert("Server response timeout");
+        
+        let errorMsg = "Failed to send email";
+        
+        if (error?.response?.status === 403) {
+          errorMsg = "Access Denied (403)\n\n⚠️ SOLUTION:\n" +
+            "1. Django server might be blocking CSRF requests\n" +
+            "2. Try restarting the backend server\n" +
+            "3. Clear browser cache and try again\n" +
+            "4. Check that backend is running on http://127.0.0.1:8000";
+        } else if (error?.response?.status === 500) {
+          errorMsg = "Server error (500). Check backend logs for details.\n\n⚠️ SOLUTION:\n" +
+            "1. Check Django console for errors\n" +
+            "2. Verify email configuration is correct\n" +
+            "3. Restart Django server";
+        } else if (error?.response?.status === 404) {
+          errorMsg = "API endpoint not found (404)\n\n⚠️ SOLUTION:\n" +
+            "1. Check if backend server is running\n" +
+            "2. Verify backend is on http://127.0.0.1:8000\n" +
+            "3. Check that Django migrations are complete";
         } else if (error?.response?.data?.error) {
-          alert(error.response.data.error);
+          errorMsg = error.response.data.error;
+          
+          // Provide helpful suggestions for common errors
+          if (errorMsg.includes("authentication") || errorMsg.includes("Auth")) {
+            errorMsg += "\n\n⚠️ SOLUTION:\n" +
+              "1. Check Gmail settings\n" +
+              "2. Use App Password (not regular password)\n" +
+              "3. Enable 2-factor authentication\n" +
+              "4. Generate app password at: https://myaccount.google.com/apppasswords";
+          } else if (errorMsg.includes("Connection")) {
+            errorMsg += "\n\n⚠️ SOLUTION:\n" +
+              "1. Check internet connection\n" +
+              "2. Check if firewall blocks SMTP port 587\n" +
+              "3. Try again in a moment";
+          }
+        } else if (error?.code === "ECONNABORTED") {
+          errorMsg = "Request timeout (Network offline?)\n\n⚠️ SOLUTION:\n" +
+            "1. Check internet connection\n" +
+            "2. Verify backend server is running\n" +
+            "3. Try again";
+        } else if (error?.code === "ERR_NETWORK") {
+          errorMsg = "Network Error - Cannot reach backend\n\n⚠️ SOLUTION:\n" +
+            "1. Verify backend is running on http://127.0.0.1:8000\n" +
+            "2. Check firewall/network settings\n" +
+            "3. Restart Django server";
         } else if (error?.message) {
-          alert(`Failed to send email: ${error.message}`);
-        } else {
-          alert("Failed to send email");
+          errorMsg = `Network error: ${error.message}`;
         }
+        
+        alert(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -128,20 +162,23 @@ const SendExamMail = () => {
         });
 
         console.log("Bulk send exam response:", response.data);
-        alert(response.data.message || `Bulk exam mails sent successfully ✅\nSent to ${response.data.sent || 0} students`);
+        const successMsg = `${response.data.message || "Bulk exam mails sent ✅"}\n\nSent: ${response.data.sent || 0}\nFailed: ${response.data.failed || 0}`;
+        alert(successMsg);
 
         setCsvFile(null);
         setSelectedCourse("");
       } catch (error) {
         console.error("Error bulk sending exam:", error?.response?.data || error);
 
-        if (error.code === "ECONNABORTED") {
-          alert("Server response timeout");
-        } else if (error?.response?.data?.error) {
-          alert(error.response.data.error);
-        } else {
-          alert("Failed to send bulk emails");
+        let errorMsg = "Failed to send bulk emails";
+        
+        if (error?.response?.data?.error) {
+          errorMsg = error.response.data.error;
+        } else if (error?.code === "ECONNABORTED") {
+          errorMsg = "Server response timeout";
         }
+        
+        alert(errorMsg);
       } finally {
         setLoading(false);
       }

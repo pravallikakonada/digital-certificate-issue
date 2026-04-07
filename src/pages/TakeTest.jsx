@@ -17,6 +17,21 @@ const TakeTest = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submissionSummary, setSubmissionSummary] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExamData, setHasExamData] = useState(false);
+
+  // Load exam details from localStorage on mount
+  useEffect(() => {
+    const examName = localStorage.getItem('examName');
+    const examEmail = localStorage.getItem('examEmail');
+    const examCourse = localStorage.getItem('examCourse');
+
+    if (examName && examEmail && examCourse) {
+      setStudentName(examName);
+      setStudentEmail(examEmail);
+      setCourseTitle(examCourse);
+      setHasExamData(true);
+    }
+  }, []);
 
   const normalizeCourseTitle = (course) => {
     const value = (course || "").trim().toLowerCase();
@@ -151,6 +166,11 @@ const TakeTest = () => {
       setIsSubmitting(false);
     }
 
+    // Clear localStorage after successful submission
+    localStorage.removeItem('examName');
+    localStorage.removeItem('examEmail');
+    localStorage.removeItem('examCourse');
+
     if (!isAutoSubmit) {
       alert(
         `Test completed ✅\nScore: ${summary.score}/${summary.totalQuestions}\nResult: ${summary.finalResult}`
@@ -159,6 +179,10 @@ const TakeTest = () => {
   };
 
   const handleBackToDashboard = () => {
+    // Clear localStorage when leaving test page
+    localStorage.removeItem('examName');
+    localStorage.removeItem('examEmail');
+    localStorage.removeItem('examCourse');
     navigate("/student-dashboard");
   };
 
@@ -184,69 +208,98 @@ const TakeTest = () => {
         {!startedAt ? (
           <>
             <h1 style={{ color: "#1e3a8a", marginTop: 0 }}>Take Test</h1>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>Name:</label>
-              <input
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ccc",
-                  borderRadius: "5px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>Email:</label>
-              <input
-                type="email"
-                value={studentEmail}
-                onChange={(e) => setStudentEmail(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ccc",
-                  borderRadius: "5px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "5px" }}>Course:</label>
-              <input
-                type="text"
-                value={courseTitle}
-                onChange={(e) => setCourseTitle(e.target.value)}
-                placeholder="e.g., Python Programming"
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ccc",
-                  borderRadius: "5px",
-                  fontSize: "16px",
-                }}
-              />
-            </div>
-            <button
-              onClick={handleStartTest}
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "14px 20px",
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontWeight: "600",
-                fontSize: "16px",
-              }}
-            >
-              {loading ? "Loading..." : "Start Test"}
-            </button>
+            {hasExamData ? (
+              <>
+                <div style={{ marginBottom: "20px", padding: "16px", background: "#f0f9ff", borderRadius: "8px", border: "1px solid #0ea5e9" }}>
+                  <p style={{ margin: "8px 0" }}><b>Name:</b> {studentName}</p>
+                  <p style={{ margin: "8px 0" }}><b>Email:</b> {studentEmail}</p>
+                  <p style={{ margin: "8px 0" }}><b>Course:</b> {courseTitle}</p>
+                </div>
+                <button
+                  onClick={handleStartTest}
+                  disabled={loading}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px",
+                    background: "#2563eb",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                  }}
+                >
+                  {loading ? "Loading..." : "Start Test Now"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ marginBottom: "20px" }}>
+                  <label style={{ display: "block", marginBottom: "5px" }}>Name:</label>
+                  <input
+                    type="text"
+                    value={studentName}
+                    onChange={(e) => setStudentName(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      fontSize: "16px",
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: "20px" }}>
+                  <label style={{ display: "block", marginBottom: "5px" }}>Email:</label>
+                  <input
+                    type="email"
+                    value={studentEmail}
+                    onChange={(e) => setStudentEmail(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      fontSize: "16px",
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: "20px" }}>
+                  <label style={{ display: "block", marginBottom: "5px" }}>Course:</label>
+                  <input
+                    type="text"
+                    value={courseTitle}
+                    onChange={(e) => setCourseTitle(e.target.value)}
+                    placeholder="e.g., Python Programming"
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      fontSize: "16px",
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleStartTest}
+                  disabled={loading}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px",
+                    background: "#2563eb",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                  }}
+                >
+                  {loading ? "Loading..." : "Start Test"}
+                </button>
+              </>
+            )}
           </>
         ) : (
           <>

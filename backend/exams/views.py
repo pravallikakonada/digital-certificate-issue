@@ -1,5 +1,7 @@
 import csv
 import io
+import traceback
+import smtplib
 from urllib.parse import quote
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
@@ -53,6 +55,9 @@ def send_exam_mail(request):
         )
 
         # 4. Try to send email first
+        email_sent = False
+        email_error_msg = ""
+        
         try:
             subject = f"Exam Invitation: {course_title}"
             message = f"""Dear {student_name},
@@ -89,14 +94,38 @@ Digital Certificate System
                 'Importance': 'high',
                 'Return-Path': settings.DEFAULT_FROM_EMAIL,
             }
+            print(f"[EMAIL LOG] Attempting to send email to {student_email}")
+            print(f"[EMAIL CONFIG] Backend: {settings.EMAIL_BACKEND}")
+            print(f"[EMAIL CONFIG] Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
+            
             email.send(fail_silently=False)
-            print(f"SUCCESS: Email sent to {student_email}")
+            print(f"[SUCCESS] Email sent to {student_email}")
+            email_sent = True
 
+        except smtplib.SMTPAuthenticationError as auth_error:
+            email_error_msg = "Gmail authentication failed. Check your email/password or app password."
+            print(f"[AUTH ERROR] {email_error_msg}: {str(auth_error)}")
+            
+        except smtplib.SMTPException as smtp_error:
+            email_error_msg = f"SMTP Error: {str(smtp_error)}"
+            print(f"[SMTP ERROR] {email_error_msg}")
+            
         except Exception as email_error:
-            print(f"FAILED: Email to {student_email}. Error: {str(email_error)}")
-            return Response({"error": f"Failed to send email: {str(email_error)}"}, status=500)
+            email_error_msg = str(email_error)
+            print(f"[ERROR] Email to {student_email} failed: {email_error_msg}")
+            print("[TRACEBACK]", traceback.format_exc())
 
-        # 5. Save to DB only after email is sent successfully
+        # 5. Save to DB if email was sent OR show error
+        if not email_sent:
+            return Response({
+                "error": email_error_msg or "Failed to send email. Check backend logs.",
+                "details": {
+                    "email_backend": settings.EMAIL_BACKEND,
+                    "email_host": settings.EMAIL_HOST,
+                    "email_port": settings.EMAIL_PORT,
+                }
+            }, status=500)
+
         try:
             invitation = ExamInvitation.objects.create(
                 student_name=student_name,
@@ -107,16 +136,19 @@ Digital Certificate System
             )
         except Exception as db_error:
             # Email was sent but DB failed - still return success since email went out
-            print(f"WARNING: Email sent but DB save failed: {str(db_error)}")
-            return Response({"message": "Email sent successfully, but database save failed.", "mail_sent": True}, status=200)
+            print(f"[WARNING] Email sent but DB save failed: {str(db_error)}")
+            return Response({
+                "message": "Email sent successfully ✅ (database save had a minor issue)",
+                "mail_sent": True
+            }, status=200)
 
         # 6. Return Success
         return Response({"message": "Exam mail sent successfully ✅", "mail_sent": True}, status=200)
 
     except Exception as e:
-        # This catches the 500 error and tells you what happened
-        print("CRITICAL ERROR in send_exam_mail:", str(e))
-        return Response({"error": f"Server Crash: {str(e)}"}, status=500)
+        print("[CRITICAL ERROR] in send_exam_mail:", str(e))
+        print("[TRACEBACK]", traceback.format_exc())
+        return Response({"error": f"Server error: {str(e)}"}, status=500)
 
 
 @api_view(["POST"])
@@ -194,12 +226,19 @@ Digital Certificate System
                 )
 
                 sent_count += 1
-                print(f"BULK SUCCESS: Email sent to {student_email}")
+                print(f"[BULK SUCCESS] Email sent to {student_email}")
 
+            except smtplib.SMTPAuthenticationError as auth_error:
+                failed_count += 1
+                error_msg = f"Auth failed to {student_email}"
+                errors.append(error_msg)
+                print(f"[BULK AUTH ERROR] {error_msg}")
+                
             except Exception as e:
                 failed_count += 1
-                errors.append(f"Failed to send to {student_email}: {str(e)}")
-                print(f"BULK ERROR: {str(e)}")
+                error_msg = f"Failed to send to {student_email}: {str(e)[:50]}"
+                errors.append(error_msg)
+                print(f"[BULK ERROR] {error_msg}")
 
         message = f"Bulk email sending completed. Sent: {sent_count}, Failed: {failed_count}"
         if errors:
@@ -208,6 +247,8 @@ Digital Certificate System
         return Response({"message": message, "sent": sent_count, "failed": failed_count}, status=200)
 
     except Exception as e:
+        print(f"[BULK CRITICAL ERROR] {str(e)}")
+        print("[TRACEBACK]", traceback.format_exc())
         return Response({"error": str(e)}, status=500)
 
 
@@ -221,6 +262,7 @@ def completed_tests(request):
                 "id": s.id, "student_name": s.student_name, "student_email": s.student_email,
                 "course_title": s.course_title, "score": s.score, "result": s.result,
                 "status": s.status, "submitted_at": s.submitted_at,
+                "eligible_for_certificate": s.eligible_for_certificate,
             })
         return Response(data, status=200)
     except Exception as e:
@@ -272,10 +314,39 @@ def get_questions(request, course_title):
 
 @api_view(["GET"])
 def test_email_config(request):
+    """Test email configuration by checking connection settings"""
     try:
-        conn = get_email_connection()
-        conn.open()
-        conn.close()
-        return Response({"status": "ok"})
+        config_info = {
+            "email_backend": settings.EMAIL_BACKEND,
+            "email_host": settings.EMAIL_HOST,
+            "email_port": settings.EMAIL_PORT,
+            "email_use_tls": settings.EMAIL_USE_TLS,
+            "email_use_ssl": settings.EMAIL_USE_SSL,
+            "from_email": settings.DEFAULT_FROM_EMAIL,
+            "frontend_url": settings.FRONTEND_URL,
+            "user_configured": bool(settings.EMAIL_HOST_USER),
+        }
+        
+        # Try to open a connection
+        try:
+            print("[TEST] Attempting to open SMTP connection...")
+            conn = get_email_connection()
+            conn.open()
+            print("[TEST] SMTP connection successful!")
+            conn.close()
+            config_info["connection_status"] = "SUCCESS ✅"
+            return Response(config_info, status=200)
+        except smtplib.SMTPAuthenticationError as e:
+            print(f"[TEST] SMTP Auth Error: {str(e)}")
+            config_info["connection_status"] = f"AUTH FAILED - Check email/password"
+            config_info["error"] = str(e)
+            return Response(config_info, status=500)
+        except Exception as conn_error:
+            print(f"[TEST] Connection Error: {str(conn_error)}")
+            config_info["connection_status"] = f"CONNECTION FAILED"
+            config_info["error"] = str(conn_error)
+            return Response(config_info, status=500)
+            
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
+        print(f"[TEST] Error: {str(e)}")
+        return Response({"error": str(e), "status": "failed"}, status=500)

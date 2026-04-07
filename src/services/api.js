@@ -23,6 +23,7 @@ console.log("API Configuration:", {
 
 const api = axios.create({
   baseURL: baseURL || undefined,
+  withCredentials: true, // Include cookies for CSRF token
 });
 
 api.interceptors.request.use((config) => {
@@ -32,7 +33,49 @@ api.interceptors.request.use((config) => {
       config.url = config.url.replace(/^\/api/, "");
     }
   }
+  
+  // Log request details for debugging
+  console.log(`[API REQUEST] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+  
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => {
+    console.log(`[API SUCCESS] ${response.status} from ${response.config.url}`);
+    return response;
+  },
+  (error) => {
+    // Enhanced error logging
+    const status = error?.response?.status;
+    const message = error?.message;
+    
+    console.error("[API ERROR] Details:", {
+      status,
+      statusText: error?.response?.statusText,
+      message,
+      url: error?.config?.url,
+      method: error?.config?.method,
+      data: error?.response?.data,
+    });
+    
+    // Provide helpful debugging info
+    if (status === 403) {
+      console.error("[DEBUG 403] This is likely a CSRF or permission issue. Check:");
+      console.error("  - Is backend running?");
+      console.error("  - Is CORS configured correctly?");
+      console.error("  - Are API routes correct?");
+    } else if (status === 404) {
+      console.error("[DEBUG 404] API endpoint not found. Check:");
+      console.error("  - Is the endpoint URL correct?");
+      console.error("  - Did you restart Django after changes?");
+    } else if (!error?.response) {
+      console.error("[DEBUG NETWORK] Network error - backend might be offline");
+      console.error("  Check: http://127.0.0.1:8000");
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 export default api;

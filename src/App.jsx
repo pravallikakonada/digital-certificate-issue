@@ -14,9 +14,11 @@ import TakeTest from "./pages/TakeTest";
 import CompletedTests from "./pages/CompletedTests";
 import UploadCSV from "./pages/UploadCSV";
 import IssueCertificate from "./pages/IssueCertificate";
+import IssuedCertificates from "./pages/IssuedCertificates";
 import MyCertificates from "./pages/MyCertificates";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import ManageCourses from "./pages/ManageCourses";
+import EmailConfig from "./pages/EmailConfig";
 
 const App = () => {
   return (
@@ -76,6 +78,24 @@ const App = () => {
           element={
             <ProtectedRoute role="admin">
               <IssueCertificate />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/issued-certificates"
+          element={
+            <ProtectedRoute role="admin">
+              <IssuedCertificates />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/email-config"
+          element={
+            <ProtectedRoute role="admin">
+              <EmailConfig />
             </ProtectedRoute>
           }
         />

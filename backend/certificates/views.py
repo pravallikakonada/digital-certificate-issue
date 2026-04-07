@@ -85,7 +85,7 @@ Certificate ID: {certificate_id}
 Status: {status}
 
 Login here to view your certificate:
-https://digital-certificate-issue.vercel.app/student-login
+http://localhost:5173/student-login
 
 Regards,
 Admin

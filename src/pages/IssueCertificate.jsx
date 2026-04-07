@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import Header from "../components/Header";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const API = "/api/certificates/issue/";
 const FALLBACK_API = "/api/certificates/";
@@ -9,6 +9,7 @@ const COMPLETED_TESTS_API = "/api/exams/completed-tests/";
 
 const IssueCertificate = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [eligibleStudents, setEligibleStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
@@ -24,6 +25,13 @@ const IssueCertificate = () => {
   useEffect(() => {
     const fetchEligibleStudents = async () => {
       try {
+        // First, check for localStorage data before fetching
+        const testDataFromStorage = localStorage.getItem('certificateTestData');
+        let storedTestData = null;
+        if (testDataFromStorage) {
+          storedTestData = JSON.parse(testDataFromStorage);
+        }
+
         const apiResponse = await api.get(COMPLETED_TESTS_API);
         // Filter students who passed and don't have certificates issued yet
         const eligible = apiResponse.data.filter(
@@ -32,6 +40,31 @@ const IssueCertificate = () => {
                     student.status !== "Certificate Issued"
         );
         setEligibleStudents(eligible || []);
+
+        // Auto-load test data from localStorage if coming from CompletedTests
+        if (storedTestData) {
+          // Find matching student in eligible list
+          const matchingStudent = eligible.find(s => String(s.id) === String(storedTestData.id));
+          
+          if (matchingStudent) {
+            // Student is in eligible list - auto-fill and select
+            setSelectedStudentId(String(matchingStudent.id));
+            setStudentName(matchingStudent.student_name);
+            setStudentEmail(matchingStudent.student_email);
+            setCourseTitle(matchingStudent.course_title);
+            setCertificateId(generateCertificateId());
+          } else {
+            // Student not in eligible list - still auto-fill the form fields
+            setStudentName(storedTestData.student_name);
+            setStudentEmail(storedTestData.student_email);
+            setCourseTitle(storedTestData.course_title);
+            setCertificateId(generateCertificateId());
+            // Don't set selectedStudentId since student is not in dropdown
+          }
+          
+          // Clear the stored data after using it
+          localStorage.removeItem('certificateTestData');
+        }
       } catch (error) {
         console.error("Error fetching eligible students:", error);
         setEligibleStudents([]);
@@ -104,8 +137,13 @@ const IssueCertificate = () => {
 
       alert(
         response?.data?.message ||
-          "Certificate issued successfully and mail sent"
+          "Certificate issued successfully and mail sent\n\nRedirecting back to completed tests..."
       );
+
+      // Redirect back to completed tests page after successful issuance
+      setTimeout(() => {
+        navigate('/completed-tests');
+      }, 2000); // 2 second delay to show the success message
 
       try {
         await api.post("/api/exams/update-status/", {
@@ -123,6 +161,9 @@ const IssueCertificate = () => {
       setCourseTitle("");
       setCertificateId("");
       setStatus("Issued");
+
+      // Clear any remaining localStorage data
+      localStorage.removeItem('certificateTestData');
 
       // Refresh the eligible students list
       const refreshResponse = await api.get(COMPLETED_TESTS_API);

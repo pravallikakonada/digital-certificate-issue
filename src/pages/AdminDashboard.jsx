@@ -49,11 +49,22 @@ const AdminDashboard = () => {
             <p style={cardText}>Generate and issue certificates to students.</p>
           </Link>
 
+          <Link to="/issued-certificates" style={card}>
+            <div style={icon}>📋</div>
+            <h3 style={cardTitle}>View Issued Certificates</h3>
+            <p style={cardText}>View all certificates issued to students.</p>
+          </Link>
 
           <Link to="/verify" style={card}>
             <div style={icon}>🔍</div>
             <h3 style={cardTitle}>Verify Certificate</h3>
             <p style={cardText}>Verify certificate details using certificate ID.</p>
+          </Link>
+
+          <Link to="/email-config" style={card}>
+            <div style={icon}>⚙️</div>
+            <h3 style={cardTitle}>Email Configuration</h3>
+            <p style={cardText}>Test and configure email settings.</p>
           </Link>
         </div>
       </div>

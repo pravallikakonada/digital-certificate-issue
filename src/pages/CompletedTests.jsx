@@ -59,6 +59,17 @@ const CompletedTests = () => {
 
   const handleIssueCertificate = async (test) => {
     try {
+      // Store test data in localStorage for auto-fill on issue page
+      const testData = {
+        id: test.id,
+        student_name: test.student_name,
+        student_email: test.student_email,
+        course_title: test.course_title,
+        score: test.score,
+        total_questions: test.total_questions,
+        result: test.result,
+      };
+      localStorage.setItem('certificateTestData', JSON.stringify(testData));
       // Navigate to /issue page for certificate issuance
       navigate('/issue');
     } catch (error) {
@@ -205,7 +216,7 @@ const CompletedTests = () => {
                   </div>
 
                   <div style={cardFooter}>
-                    {test.result === "Passed" && test.status !== "Certificate Issued" && (
+                    {test.result === "Passed" && test.eligible_for_certificate && test.status !== "Certificate Issued" && (
                       <button
                         style={issueBtn}
                         onClick={() => handleIssueCertificate(test)}

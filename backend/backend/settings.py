@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'middleware.DisableCSRFForAPIMiddleware',  # Disable CSRF for /api/* endpoints
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -119,5 +120,5 @@ EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 30))
 # If using Gmail, set up an app password for this account and do not rely on normal login credentials.
 # Ensure the account allows SMTP access and that the password is valid for sending email.
 
-# Frontend URL for email links
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+# Frontend URL for email links - Strip trailing slash to prevent double slashes in email links
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173').rstrip('/')

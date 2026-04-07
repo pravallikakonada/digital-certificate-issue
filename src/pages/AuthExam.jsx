@@ -20,11 +20,11 @@ const AuthExam = () => {
   const [loading, setLoading] = useState(false);
 
   const goToTest = () => {
-    navigate(
-      `/take-test?name=${encodeURIComponent(name)}&email=${encodeURIComponent(
-        email
-      )}&course=${encodeURIComponent(course)}`
-    );
+    // Store exam details in localStorage to avoid exposing in URL
+    localStorage.setItem('examName', name);
+    localStorage.setItem('examEmail', email);
+    localStorage.setItem('examCourse', course);
+    navigate('/take-test');
   };
 
   const handleSubmit = async (e) => {
