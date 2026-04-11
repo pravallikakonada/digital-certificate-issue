@@ -19,6 +19,7 @@ import MyCertificates from "./pages/MyCertificates";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import ManageCourses from "./pages/ManageCourses";
 import EmailConfig from "./pages/EmailConfig";
+import ManageQuestions from "./pages/ManageQuestions";
 
 const App = () => {
   return (
@@ -29,6 +30,8 @@ const App = () => {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/student-login" element={<StudentLogin />} />
         <Route path="/student-signup" element={<StudentSignup />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route
           path="/admin-dashboard"
@@ -43,6 +46,15 @@ const App = () => {
           path="/manage-courses"
           element={
             <ManageCourses />
+          }
+        />
+
+        <Route
+          path="/manage-questions"
+          element={
+            <ProtectedRoute role="admin">
+              <ManageQuestions />
+            </ProtectedRoute>
           }
         />
 
@@ -120,7 +132,7 @@ const App = () => {
 
         <Route path="/auth-exam" element={<AuthExam />} />
         <Route path="/take-test" element={<TakeTest />} />
-        <Route path="/verify" element={<VerifyCertificate />} />
+        <Route path="/verify/:id?" element={<VerifyCertificate />} />
       </Routes>
     </Router>
   );

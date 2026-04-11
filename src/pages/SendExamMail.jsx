@@ -187,34 +187,51 @@ const SendExamMail = () => {
 
   return (
     <>
+      <style>
+        {`
+          @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+          input:focus, select:focus {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+          }
+        `}
+      </style>
       <Header />
 
       <div style={container}>
-        <div style={pageWrapper}>
-          <div style={mainCard}>
-            <div style={managementCard}>
-              <div style={headerRow}>
-                <div>
-                  <p style={subTitle}>Exam Management</p>
-                  <h2 style={headingTitle}>Send Exam Mail</h2>
-                </div>
+        <div style={contentWrapper}>
+          <div style={headerSection}>
+            <div style={headerBadge}>📧</div>
+            <h1 style={pageTitle}>Send Exam</h1>
+            <p style={pageSubtitle}>Distribute exams to students via email</p>
+          </div>
 
-                <div style={editHeader}>
-                  <span style={editIcon}>📧</span>
-                  <span style={editLabel}>Send Exams</span>
-                </div>
+          <div style={twoColumnLayout}>
+            <div style={formCard}>
+              <div style={formHeader}>
+                <h2 style={formTitle}>Send Exam Mail</h2>
+                <span style={formBadge}>
+                  {mode === "single" ? "👤 Single Student" : "📦 Bulk Upload"}
+                </span>
               </div>
 
               {/* Mode Selection */}
               <div style={modeSelection}>
-                <label style={modeLabel}>Send Mode:</label>
                 <div style={modeButtons}>
                   <button
                     type="button"
                     style={{
                       ...modeBtn,
-                      backgroundColor: mode === "single" ? "#3b82f6" : "#e5e7eb",
-                      color: mode === "single" ? "white" : "#374151"
+                      background: mode === "single" ? "#8b5cf6" : "rgba(139, 92, 246, 0.1)",
+                      color: mode === "single" ? "white" : "#7c3aed",
+                      borderColor: mode === "single" ? "#8b5cf6" : "transparent"
                     }}
                     onClick={() => setMode("single")}
                   >
@@ -224,68 +241,69 @@ const SendExamMail = () => {
                     type="button"
                     style={{
                       ...modeBtn,
-                      backgroundColor: mode === "bulk" ? "#10b981" : "#e5e7eb",
-                      color: mode === "bulk" ? "white" : "#374151"
+                      background: mode === "bulk" ? "#8b5cf6" : "rgba(139, 92, 246, 0.1)",
+                      color: mode === "bulk" ? "white" : "#7c3aed",
+                      borderColor: mode === "bulk" ? "#8b5cf6" : "transparent"
                     }}
                     onClick={() => setMode("bulk")}
                   >
-                    Bulk (CSV Upload)
+                    Bulk Upload
                   </button>
                 </div>
               </div>
 
               <form onSubmit={handleSendExam} style={form}>
                 {mode === "single" ? (
-                  <div style={formSection}>
-                    <h3 style={sectionTitle}>Single Student Details</h3>
-                    <input
-                      type="text"
-                      placeholder="Student Name"
-                      value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
-                      style={input}
-                      required
-                    />
-
-                    <input
-                      type="email"
-                      placeholder="Student Email"
-                      value={studentEmail}
-                      onChange={(e) => setStudentEmail(e.target.value)}
-                      style={input}
-                      required
-                    />
-                  </div>
-                ) : (
-                  <div style={formSection}>
-                    <h3 style={sectionTitle}>Bulk Upload</h3>
-                    <div style={fileUploadSection}>
-                      <label style={fileLabel}>Upload CSV File:</label>
+                  <>
+                    <div style={formGroup}>
+                      <label style={formLabel}>Student Name</label>
                       <input
-                        type="file"
-                        accept=".csv"
-                        onChange={(e) => setCsvFile(e.target.files[0])}
-                        style={fileInput}
+                        type="text"
+                        placeholder="Enter student name"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        style={formInput}
                         required
                       />
-                      <small style={fileHelp}>
-                        CSV format: student_name,student_email (one student per row, first row is header)
-                      </small>
                     </div>
+
+                    <div style={formGroup}>
+                      <label style={formLabel}>Student Email</label>
+                      <input
+                        type="email"
+                        placeholder="Enter student email"
+                        value={studentEmail}
+                        onChange={(e) => setStudentEmail(e.target.value)}
+                        style={formInput}
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div style={formGroup}>
+                    <label style={formLabel}>Upload CSV File</label>
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={(e) => setCsvFile(e.target.files[0])}
+                      style={formInput}
+                      required
+                    />
+                    <p style={fileHelp}>Format: student_name,student_email (header row required)</p>
                   </div>
                 )}
 
-                <div style={formSection}>
-                  <h3 style={sectionTitle}>Course Selection</h3>
+                <div style={formGroup}>
+                  <label style={formLabel}>Select Course</label>
                   <select
                     value={selectedCourse}
                     onChange={(e) => setSelectedCourse(e.target.value)}
-                    style={select}
+                    style={formSelect}
                     required
                     disabled={coursesLoading || coursesError}
                   >
                     <option value="">
-                      {coursesLoading ? "Loading courses..." : coursesError ? "Error loading courses" : "Select Course"}
+                      {coursesLoading ? "Loading courses..." : coursesError ? "Error loading courses" : "Choose a course"}
                     </option>
                     {courses.map((course) => (
                       <option key={course.id} value={course.title}>
@@ -293,28 +311,21 @@ const SendExamMail = () => {
                       </option>
                     ))}
                   </select>
-                  {coursesError && (
-                    <div style={{ marginTop: "10px" }}>
-                      <p style={{ color: "red", marginBottom: "5px", fontSize: "14px" }}>
-                        {coursesError}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={fetchCourses}
-                        style={{
-                          ...submitBtn,
-                          background: "#6b7280",
-                          padding: "8px 16px",
-                          fontSize: "14px",
-                          width: "auto"
-                        }}
-                        disabled={coursesLoading}
-                      >
-                        {coursesLoading ? "Retrying..." : "Retry Loading Courses"}
-                      </button>
-                    </div>
-                  )}
                 </div>
+
+                {coursesError && (
+                  <div style={errorBox}>
+                    <p style={errorText}>⚠️ {coursesError}</p>
+                    <button
+                      type="button"
+                      onClick={fetchCourses}
+                      style={retryBtn}
+                      disabled={coursesLoading}
+                    >
+                      {coursesLoading ? "Retrying..." : "Retry"}
+                    </button>
+                  </div>
+                )}
 
                 <button type="submit" style={submitBtn} disabled={loading}>
                   {loading
@@ -323,6 +334,26 @@ const SendExamMail = () => {
                   }
                 </button>
               </form>
+            </div>
+
+            <div style={infoSection}>
+              <div style={infoCard}>
+                <div style={infoIcon}>📧</div>
+                <h3 style={infoTitle}>Single Student</h3>
+                <p style={infoText}>Send exam invitation to a specific student via email</p>
+              </div>
+
+              <div style={infoCard}>
+                <div style={infoIcon}>📦</div>
+                <h3 style={infoTitle}>Bulk Upload</h3>
+                <p style={infoText}>Import CSV file to send exams to multiple students at once</p>
+              </div>
+
+              <div style={infoCard}>
+                <div style={infoIcon}>📚</div>
+                <h3 style={infoTitle}>Course Selection</h3>
+                <p style={infoText}>Choose the course for which the exam will be sent</p>
+              </div>
             </div>
           </div>
         </div>
@@ -333,197 +364,227 @@ const SendExamMail = () => {
 
 const container = {
   minHeight: "100vh",
-  width: "100vw",
-  padding: "32px 18px",
-  background: "#f3f4f6",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "flex-start",
-  boxSizing: "border-box",
+  background: "linear-gradient(135deg, #3730a3 0%, #7c3aed 50%, #a78bfa 100%)",
+  padding: "40px 20px 60px",
+  fontFamily: "system-ui, -apple-system, sans-serif",
 };
 
-const pageWrapper = {
-  width: "min(980px, 100%)",
+const contentWrapper = {
+  maxWidth: "1200px",
+  margin: "0 auto",
+  animation: "slideInUp 0.6s ease-out",
+};
+
+const headerSection = {
+  textAlign: "center",
+  marginBottom: "40px",
+  animation: "slideInUp 0.8s ease-out",
+};
+
+const headerBadge = {
+  fontSize: "48px",
+  marginBottom: "16px",
+  display: "inline-block",
+};
+
+const pageTitle = {
+  fontSize: "40px",
+  fontWeight: "700",
+  color: "white",
+  margin: "0 0 8px",
+  letterSpacing: "-0.5px",
+};
+
+const pageSubtitle = {
+  fontSize: "16px",
+  color: "rgba(255, 255, 255, 0.8)",
+  margin: "0",
+  fontWeight: "500",
+};
+
+const twoColumnLayout = {
   display: "grid",
-  gap: "22px",
+  gridTemplateColumns: window.innerWidth > 900 ? "1fr 1.2fr" : "1fr",
+  gap: "30px",
+  alignItems: "start",
 };
 
-const mainCard = {
-  width: "100%",
-  display: "grid",
-  gap: "18px",
+const formCard = {
+  background: "white",
+  borderRadius: "16px",
+  padding: "32px",
+  boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
+  animation: "slideInLeft 0.6s ease-out",
 };
 
-const managementCard = {
-  background: "#ffffff",
-  padding: "28px",
-  borderRadius: "20px",
-  border: "1px solid #e5e7eb",
-};
-
-const headerRow = {
+const formHeader = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  gap: "20px",
-  marginBottom: "28px",
+  marginBottom: "24px",
+  paddingBottom: "16px",
+  borderBottom: "2px solid #f3e8ff",
 };
 
-const subTitle = {
-  margin: 0,
-  fontSize: "14px",
-  color: "#64748b",
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
+const formTitle = {
+  fontSize: "24px",
+  fontWeight: "700",
+  color: "#1f2937",
+  margin: "0",
 };
 
-const headingTitle = {
-  margin: "8px 0 0",
-  fontSize: "28px",
-  color: "#0f172a",
-};
-
-const editHeader = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-  background: "#eff6ff",
-  border: "1px solid #bfdbfe",
-  borderRadius: "999px",
-  padding: "10px 16px",
-  color: "#1d4ed8",
-  fontWeight: 600,
-};
-
-const editIcon = {
-  fontSize: "18px",
-};
-
-const editLabel = {
-  whiteSpace: "nowrap",
+const formBadge = {
+  background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
+  color: "white",
+  padding: "6px 12px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
 };
 
 const modeSelection = {
-  marginBottom: "28px",
-};
-
-const modeLabel = {
-  display: "block",
-  marginBottom: "12px",
-  fontWeight: "600",
-  color: "#374151",
-  fontSize: "16px",
+  marginBottom: "24px",
 };
 
 const modeButtons = {
   display: "flex",
   gap: "12px",
-  flexWrap: "wrap",
 };
 
 const modeBtn = {
-  padding: "12px 20px",
-  border: "none",
-  borderRadius: "12px",
+  flex: 1,
+  padding: "10px 16px",
+  border: "2px solid transparent",
+  borderRadius: "8px",
   cursor: "pointer",
   fontWeight: "600",
-  fontSize: "14px",
-  transition: "all 0.2s",
-  minWidth: "140px",
+  fontSize: "13px",
+  transition: "all 0.2s ease",
 };
 
 const form = {
   display: "flex",
   flexDirection: "column",
-  gap: "24px",
+  gap: "20px",
 };
 
-const formSection = {
-  background: "#f8fafc",
-  padding: "20px",
-  borderRadius: "12px",
-  border: "1px solid #e2e8f0",
+const formGroup = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
 };
 
-const sectionTitle = {
-  margin: "0 0 16px 0",
-  fontSize: "18px",
-  color: "#0f172a",
-  fontWeight: "600",
-};
-
-const input = {
-  width: "100%",
-  padding: "12px 14px",
-  marginBottom: "12px",
-  borderRadius: "12px",
-  border: "1px solid #d1d5db",
-  outline: "none",
-  fontSize: "15px",
-  background: "#ffffff",
-  color: "#111827",
-  boxSizing: "border-box",
-  transition: "border-color 0.2s",
-};
-
-const select = {
-  width: "100%",
-  padding: "12px 14px",
-  borderRadius: "12px",
-  border: "1px solid #d1d5db",
-  outline: "none",
-  fontSize: "15px",
-  background: "#ffffff",
-  color: "#111827",
-  boxSizing: "border-box",
-  cursor: "pointer",
-};
-
-const fileUploadSection = {
-  marginBottom: "12px",
-};
-
-const fileLabel = {
-  display: "block",
-  marginBottom: "8px",
+const formLabel = {
+  fontSize: "14px",
   fontWeight: "600",
   color: "#374151",
-  fontSize: "14px",
 };
 
-const fileInput = {
-  width: "100%",
+const formInput = {
   padding: "12px 14px",
-  borderRadius: "12px",
-  border: "1px solid #d1d5db",
-  outline: "none",
-  fontSize: "15px",
-  background: "#ffffff",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
+  fontSize: "14px",
+  background: "#f9fafb",
   color: "#111827",
   boxSizing: "border-box",
+  transition: "all 0.2s ease",
+};
+
+const formSelect = {
+  padding: "12px 14px",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
+  fontSize: "14px",
+  background: "#f9fafb",
+  color: "#111827",
   cursor: "pointer",
+  boxSizing: "border-box",
+  transition: "all 0.2s ease",
 };
 
 const fileHelp = {
-  display: "block",
-  marginTop: "6px",
-  color: "#6b7280",
   fontSize: "12px",
+  color: "#6b7280",
+  margin: "4px 0 0",
   lineHeight: "1.4",
 };
 
-const submitBtn = {
-  width: "100%",
-  padding: "14px 16px",
-  background: "#4338ca",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "12px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "16px",
-  transition: "background-color 0.2s",
+const errorBox = {
+  background: "#fee2e2",
+  border: "1px solid #fecaca",
+  borderRadius: "8px",
+  padding: "12px 14px",
   marginTop: "8px",
+};
+
+const errorText = {
+  fontSize: "13px",
+  color: "#991b1b",
+  margin: "0 0 8px",
+};
+
+const retryBtn = {
+  padding: "8px 14px",
+  background: "#7c3aed",
+  color: "white",
+  border: "none",
+  borderRadius: "6px",
+  fontSize: "12px",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+};
+
+const submitBtn = {
+  padding: "12px 16px",
+  background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  fontSize: "15px",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+  marginTop: "8px",
+  boxShadow: "0 4px 12px rgba(124, 58, 237, 0.3)",
+};
+
+const infoSection = {
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: "16px",
+  animation: "slideInLeft 0.8s ease-out",
+};
+
+const infoCard = {
+  background: "rgba(255, 255, 255, 0.95)",
+  backdropFilter: "blur(10px)",
+  borderRadius: "12px",
+  padding: "20px",
+  textAlign: "center",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  transition: "all 0.3s ease",
+};
+
+const infoIcon = {
+  fontSize: "32px",
+  marginBottom: "12px",
+  display: "block",
+};
+
+const infoTitle = {
+  fontSize: "16px",
+  fontWeight: "700",
+  color: "#1f2937",
+  margin: "0 0 8px",
+};
+
+const infoText = {
+  fontSize: "13px",
+  color: "#6b7280",
+  margin: "0",
+  lineHeight: "1.5",
 };
 
 export default SendExamMail;

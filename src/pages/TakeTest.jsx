@@ -51,8 +51,9 @@ const TakeTest = () => {
     return courseMap[value] || course;
   };
 
-  const fetchQuestions = async () => {
-    if (!courseTitle.trim()) {
+  const fetchQuestions = async (course = courseTitle) => {
+    const trimmedCourse = (course || "").trim();
+    if (!trimmedCourse) {
       setQuestions([]);
       return;
     }
@@ -60,7 +61,13 @@ const TakeTest = () => {
     setLoading(true);
     try {
       const response = await api.get(
-        `/api/exams/questions/${encodeURIComponent(courseTitle.trim())}/`
+        `/api/exams/questions/${encodeURIComponent(trimmedCourse)}/`,
+        {
+          params: {
+            email: studentEmail.trim(),
+            limit: 5,
+          },
+        }
       );
 
       setQuestions(response.data || []);
@@ -100,7 +107,7 @@ const TakeTest = () => {
     const normalizedCourse = normalizeCourseTitle(courseTitle);
     setCourseTitle(normalizedCourse);
     setStartedAt(new Date().toISOString());
-    fetchQuestions();
+    fetchQuestions(normalizedCourse);
   };
 
   const handleOptionChange = (questionId, value) => {

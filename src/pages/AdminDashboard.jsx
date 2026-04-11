@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Header from "../components/Header";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,13 +13,29 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Header />
-
+      <style>
+        {`
+          @keyframes slideInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          a:hover {
+            transform: translateY(-4px);
+          }
+        `}
+      </style>
       <div style={container}>
         <div style={topSection}>
-          <h1 style={title}>Admin Dashboard</h1>
+          <div style={headerBadge}>👨‍💼 Admin Panel</div>
+          <h1 style={title}>Welcome Back, Admin</h1>
           <p style={subtitle}>
-            Manage courses, send exams, check completed tests, and issue certificates.
+            Manage courses, send exams, review test submissions, and issue certificates
           </p>
         </div>
 
@@ -29,6 +44,12 @@ const AdminDashboard = () => {
             <div style={icon}>📘</div>
             <h3 style={cardTitle}>Manage Courses</h3>
             <p style={cardText}>Add, edit, and organize course details.</p>
+          </Link>
+
+          <Link to="/manage-questions" style={card}>
+            <div style={icon}>❓</div>
+            <h3 style={cardTitle}>Manage Questions</h3>
+            <p style={cardText}>Add, edit, and manage exam questions for courses.</p>
           </Link>
 
           <Link to="/send-exam" style={card}>
@@ -61,11 +82,7 @@ const AdminDashboard = () => {
             <p style={cardText}>Verify certificate details using certificate ID.</p>
           </Link>
 
-          <Link to="/email-config" style={card}>
-            <div style={icon}>⚙️</div>
-            <h3 style={cardTitle}>Email Configuration</h3>
-            <p style={cardText}>Test and configure email settings.</p>
-          </Link>
+         
         </div>
       </div>
     </>
@@ -74,64 +91,90 @@ const AdminDashboard = () => {
 
 const container = {
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #eef4ff, #dbeafe)",
-  padding: "35px 20px",
+  background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)",
+  padding: "60px 20px",
   fontFamily: "Arial, sans-serif",
 };
 
 const topSection = {
   maxWidth: "1100px",
-  margin: "0 auto 30px auto",
+  margin: "0 auto 60px auto",
   textAlign: "center",
+  animation: "slideInUp 0.8s ease-out",
+};
+
+const headerBadge = {
+  display: "inline-block",
+  background: "rgba(255, 255, 255, 0.2)",
+  backdropFilter: "blur(10px)",
+  color: "white",
+  padding: "8px 16px",
+  borderRadius: "50px",
+  fontSize: "14px",
+  fontWeight: "600",
+  marginBottom: "16px",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
 };
 
 const title = {
   margin: 0,
-  fontSize: "38px",
-  color: "#1e3a8a",
-  fontWeight: "700",
+  fontSize: "48px",
+  color: "white",
+  fontWeight: "800",
+  marginBottom: "12px",
+  letterSpacing: "-0.5px",
 };
 
 const subtitle = {
-  marginTop: "10px",
-  color: "#475569",
-  fontSize: "17px",
+  marginTop: 0,
+  marginBottom: 0,
+  color: "rgba(255, 255, 255, 0.85)",
+  fontSize: "16px",
+  lineHeight: "1.6",
+  maxWidth: "700px",
+  marginLeft: "auto",
+  marginRight: "auto",
 };
 
 const grid = {
   maxWidth: "1100px",
   margin: "0 auto",
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-  gap: "22px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "24px",
 };
 
 const card = {
-  background: "#ffffff",
+  background: "white",
   textDecoration: "none",
-  padding: "28px 24px",
-  borderRadius: "18px",
-  boxShadow: "0 12px 28px rgba(30, 58, 138, 0.12)",
-  border: "1px solid #dbeafe",
-  transition: "0.3s",
+  padding: "32px 28px",
+  borderRadius: "16px",
+  boxShadow: "0 16px 40px rgba(0, 0, 0, 0.15)",
+  border: "1px solid #f3f4f6",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   display: "block",
+  position: "relative",
+  overflow: "hidden",
+  animation: "slideInUp 0.6s ease-out both",
 };
 
 const icon = {
-  fontSize: "34px",
-  marginBottom: "14px",
+  fontSize: "42px",
+  marginBottom: "16px",
+  display: "inline-block",
 };
 
 const cardTitle = {
-  margin: "0 0 10px 0",
-  color: "#1e3a8a",
-  fontSize: "22px",
+  margin: "0 0 8px 0",
+  color: "#1f2937",
+  fontSize: "18px",
+  fontWeight: "700",
 };
 
 const cardText = {
   margin: 0,
-  color: "#475569",
-  fontSize: "15px",
+  color: "#6b7280",
+  fontSize: "14px",
   lineHeight: "1.6",
 };
 

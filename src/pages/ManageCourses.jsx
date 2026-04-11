@@ -8,6 +8,7 @@ const ManageCourses = () => {
   const [courses, setCourses] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState(null);
 
   const fetchCourses = async () => {
@@ -63,77 +64,123 @@ const ManageCourses = () => {
     setEditingId(course.id);
   };
 
+  const filteredCourses = courses.filter((course) => {
+    const searchText = search.trim().toLowerCase();
+    if (!searchText) return true;
+    return (
+      course.title.toLowerCase().includes(searchText) ||
+      (course.description || "").toLowerCase().includes(searchText)
+    );
+  });
+
   return (
     <>
       <Header />
-
+      <style>
+        {`
+          @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+        `}
+      </style>
       <div style={container}>
-        <div style={pageWrapper}>
-          <div style={mainCard}>
-            <div style={managementCard}>
-              <div style={headerRow}>
-                <div>
-                  <p style={subTitle}>Course management</p>
-                  <h2 style={headingTitle}>Manage Courses</h2>
-                </div>
+        <div style={contentWrapper}>
+          <div style={headerSection}>
+            <h1 style={pageTitle}>Manage Courses</h1>
+            <p style={pageSubtitle}>Add, edit, and organize your course catalog</p>
+          </div>
 
-                <div style={editHeader}>
-                  <span style={editIcon}>✏️</span>
-                  <span style={editLabel}>Manage Courses</span>
-                </div>
+          <div style={twoColumnLayout}>
+            <div style={formSection}>
+              <div style={formHeader}>
+                <h2 style={formTitle}>{editingId ? "Edit Course" : "Add New Course"}</h2>
+                <span style={formBadge}>{editingId ? "📝 Update" : "✨ Create"}</span>
               </div>
 
-              <form onSubmit={handleSubmit}>
-                <input
-                  placeholder="Course Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  style={input}
-                  required
-                />
+              <form onSubmit={handleSubmit} style={form}>
+                <div style={formGroup}>
+                  <label style={label}>Course Title</label>
+                  <input
+                    placeholder="e.g., Python Fundamentals"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    style={input}
+                    required
+                  />
+                </div>
 
-                <textarea
-                  placeholder="Course Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={textarea}
-                  rows={4}
-                />
+                <div style={formGroup}>
+                  <label style={label}>Description</label>
+                  <textarea
+                    placeholder="Enter course description..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={textarea}
+                    rows={5}
+                  />
+                </div>
 
                 <button type="submit" style={btn}>
+                  <span style={{ marginRight: "8px" }}>{editingId ? "📝" : "➕"}</span>
                   {editingId ? "Update Course" : "Add Course"}
                 </button>
               </form>
             </div>
 
-            <div style={existingCard}>
-              <div style={existingHeaderRow}>
+            <div style={coursesSection}>
+              <div style={coursesHeader}>
                 <div>
-                  <p style={subTitle}>Existing Courses</p>
-                  <h3 style={existingTitle}>Course catalog</h3>
+                  <h2 style={coursesTitle}>Course Catalog</h2>
+                  <p style={coursesSubtitle}>Search, edit, and review published courses.</p>
                 </div>
-                <span style={existingLabel}>Editable list</span>
+                <span style={coursesCount}>{filteredCourses.length} / {courses.length}</span>
               </div>
 
-              {courses.length === 0 ? (
-                <p style={emptyText}>No courses found.</p>
-              ) : (
-                courses.map((c) => (
-                  <div key={c.id} style={courseBox}>
-                    <div style={courseInfo}>
-                      <div style={courseHeaderRow}>
-                        <span style={courseBadge}>Course</span>
-                        <span style={courseTag}>Editable</span>
-                      </div>
-                      <h4 style={courseTitle}>{c.title}</h4>
-                      <p style={courseDescription}>{c.description}</p>
-                    </div>
+              <div style={searchWrapper}>
+                <input
+                  type="search"
+                  placeholder="Search courses..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={searchInput}
+                />
+              </div>
 
-                    <button type="button" onClick={() => handleEdit(c)} style={editBtn}>
-                      <span style={editBtnIcon}>✎</span> Edit
-                    </button>
-                  </div>
-                ))
+              {filteredCourses.length === 0 ? (
+                <div style={emptyState}>
+                  <div style={emptyIcon}>🔎</div>
+                  <p style={emptyText}>
+                    {courses.length === 0
+                      ? "No courses yet. Create one to get started!"
+                      : "No courses match your search."}
+                  </p>
+                </div>
+              ) : (
+                <div style={coursesList}>
+                  {filteredCourses.map((c, idx) => (
+                    <div key={c.id} style={{...courseCard, animation: `slideInUp 0.5s ease-out ${idx * 0.08}s both`}}>
+                      <div style={courseBody}>
+                        <div style={courseMeta}>
+                          <span style={courseBadge}>📘 Course</span>
+                          <span style={courseStatus}>Active</span>
+                        </div>
+                        <h3 style={courseTitle}>{c.title}</h3>
+                        <p style={courseDescription}>{c.description || "No description provided"}</p>
+                      </div>
+
+                      <button type="button" onClick={() => handleEdit(c)} style={editBtn}>
+                        <span style={{ fontSize: "16px", marginRight: "6px" }}>✏️</span>
+                        Edit
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -145,226 +192,287 @@ const ManageCourses = () => {
 
 const container = {
   minHeight: "100vh",
-  width: "100vw",
-  padding: "32px 18px",
-  background: "#f3f4f6",
+  background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)",
+  padding: "60px 20px",
   display: "flex",
   justifyContent: "center",
   alignItems: "flex-start",
   boxSizing: "border-box",
 };
 
-const pageWrapper = {
-  width: "min(980px, 100%)",
-  display: "grid",
-  gap: "22px",
+const contentWrapper = {
+  width: "min(1200px, 100%)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "40px",
 };
 
-const mainCard = {
-  width: "100%",
+const headerSection = {
+  textAlign: "center",
+  animation: "slideInUp 0.8s ease-out",
+};
+
+const pageTitle = {
+  fontSize: "48px",
+  fontWeight: "800",
+  color: "white",
+  margin: 0,
+  marginBottom: "12px",
+  letterSpacing: "-0.5px",
+};
+
+const pageSubtitle = {
+  fontSize: "16px",
+  color: "rgba(255, 255, 255, 0.85)",
+  margin: 0,
+};
+
+const twoColumnLayout = {
   display: "grid",
+  gridTemplateColumns: window.innerWidth <= 900 ? "1fr" : "1fr 1.2fr",
+  gap: "32px",
+  animation: "slideInUp 0.8s ease-out 0.1s both",
+};
+
+const formSection = {
+  background: "white",
+  borderRadius: "16px",
+  padding: "32px",
+  boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
+};
+
+const formHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "28px",
+  paddingBottom: "16px",
+  borderBottom: "1px solid #e5e7eb",
+};
+
+const formTitle = {
+  fontSize: "22px",
+  fontWeight: "700",
+  color: "#1f2937",
+  margin: 0,
+};
+
+const formBadge = {
+  display: "inline-block",
+  background: "#e0f2fe",
+  color: "#0369a1",
+  padding: "6px 12px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
+};
+
+const form = {
+  display: "flex",
+  flexDirection: "column",
   gap: "18px",
 };
 
-const managementCard = {
-  background: "#ffffff",
-  padding: "28px",
-  borderRadius: "20px",
-  border: "1px solid #e5e7eb",
-};
-
-const existingCard = {
-  background: "#ffffff",
-  padding: "28px",
-  borderRadius: "20px",
-  border: "1px solid #e5e7eb",
-};
-
-const existingHeaderRow = {
+const formGroup = {
   display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "16px",
-  marginBottom: "20px",
+  flexDirection: "column",
+  gap: "6px",
 };
 
-const existingTitle = {
-  margin: "8px 0 0",
-  fontSize: "24px",
-  color: "#0f172a",
-};
-
-const existingLabel = {
-  padding: "8px 14px",
-  borderRadius: "999px",
-  background: "#e0f2fe",
-  color: "#1d4ed8",
-  fontWeight: 700,
+const label = {
   fontSize: "13px",
+  fontWeight: "600",
+  color: "#1f2937",
 };
 
-const headerRow = {
+const coursesSection = {
+  background: "white",
+  borderRadius: "16px",
+  padding: "32px",
+  boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
+};
+
+const coursesHeader = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  gap: "20px",
   marginBottom: "28px",
+  paddingBottom: "16px",
+  borderBottom: "1px solid #e5e7eb",
 };
 
-const subTitle = {
+const coursesTitle = {
+  fontSize: "22px",
+  fontWeight: "700",
+  color: "#1f2937",
   margin: 0,
+};
+
+const coursesCount = {
+  display: "inline-block",
+  background: "#fef3c7",
+  color: "#92400e",
+  padding: "6px 12px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
+};
+
+const coursesSubtitle = {
   fontSize: "14px",
-  color: "#64748b",
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
+  color: "#6b7280",
+  margin: "4px 0 0 0",
 };
 
-const headingTitle = {
-  margin: "8px 0 0",
-  fontSize: "28px",
-  color: "#0f172a",
+const searchWrapper = {
+  marginBottom: "24px",
 };
 
-const editHeader = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "10px",
-  background: "#eff6ff",
-  border: "1px solid #bfdbfe",
-  borderRadius: "999px",
-  padding: "10px 16px",
-  color: "#1d4ed8",
-  fontWeight: 600,
-};
-
-const editIcon = {
-  fontSize: "18px",
-};
-
-const editLabel = {
-  whiteSpace: "nowrap",
-};
-
-const input = {
+const searchInput = {
   width: "100%",
-  padding: "12px 14px",
-  marginBottom: "12px",
+  padding: "12px 16px",
   borderRadius: "12px",
   border: "1px solid #d1d5db",
-  outline: "none",
-  fontSize: "15px",
-  background: "#ffffff",
+  fontSize: "14px",
   color: "#111827",
+  background: "#f8fafc",
   boxSizing: "border-box",
-  transition: "border-color 0.2s",
+  transition: "border-color 0.2s, box-shadow 0.2s",
 };
 
-const textarea = {
-  width: "100%",
-  padding: "12px 14px",
-  marginBottom: "12px",
-  borderRadius: "12px",
-  border: "1px solid #d1d5db",
-  outline: "none",
-  fontSize: "15px",
-  background: "#ffffff",
-  color: "#111827",
-  boxSizing: "border-box",
-  resize: "vertical",
-  minHeight: "80px",
+const coursesList = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
 };
 
-const btn = {
-  width: "100%",
-  padding: "12px 14px",
-  background: "#4338ca",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "12px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "15px",
-  transition: "background-color 0.2s",
-};
-
-const courseBox = {
+const courseCard = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "flex-start",
   gap: "16px",
-  padding: "16px 18px",
-  borderRadius: "16px",
-  background: "#ffffff",
+  padding: "24px",
+  background: "#f9fafb",
   border: "1px solid #e5e7eb",
-  marginTop: "12px",
+  borderRadius: "12px",
+  transition: "all 0.3s ease",
 };
 
-const courseInfo = {
+const courseBody = {
   flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
 };
 
-const courseHeaderRow = {
+const courseMeta = {
   display: "flex",
   alignItems: "center",
-  gap: "10px",
-  flexWrap: "wrap",
+  gap: "8px",
+  marginBottom: "12px",
 };
 
 const courseBadge = {
-  padding: "6px 10px",
-  borderRadius: "999px",
-  background: "#eef2ff",
-  color: "#4338ca",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  background: "#fef3c7",
+  color: "#92400e",
   fontSize: "12px",
-  fontWeight: 700,
+  fontWeight: "700",
 };
 
-const courseTag = {
-  padding: "6px 10px",
-  borderRadius: "999px",
-  background: "#f3f4f6",
-  color: "#6b7280",
+const courseStatus = {
+  padding: "4px 10px",
+  borderRadius: "20px",
+  background: "#d1fae5",
+  color: "#065f46",
   fontSize: "12px",
+  fontWeight: "600",
+};
+
+const courseTitle = {
+  margin: "0 0 8px 0",
+  fontSize: "18px",
+  fontWeight: "700",
+  color: "#1f2937",
+};
+
+const courseDescription = {
+  margin: 0,
+  color: "#6b7280",
+  fontSize: "14px",
+  lineHeight: "1.6",
+};
+
+const input = {
+  width: "100%",
+  padding: "11px 14px",
+  borderRadius: "8px",
+  border: "1px solid #d1d5db",
+  fontSize: "14px",
+  background: "white",
+  color: "#111827",
+  boxSizing: "border-box",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+};
+
+const textarea = {
+  width: "100%",
+  padding: "11px 14px",
+  borderRadius: "8px",
+  border: "1px solid #d1d5db",
+  fontSize: "14px",
+  background: "white",
+  color: "#111827",
+  boxSizing: "border-box",
+  resize: "vertical",
+  fontFamily: "inherit",
+  transition: "border-color 0.2s, box-shadow 0.2s",
+};
+
+const btn = {
+  width: "100%",
+  padding: "12px 16px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+  fontSize: "14px",
+  transition: "all 0.3s ease",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 const editBtn = {
   display: "inline-flex",
   alignItems: "center",
-  gap: "8px",
-  background: "#1d4ed8",
+  gap: "6px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)",
   color: "white",
   border: "none",
-  borderRadius: "14px",
-  padding: "12px 16px",
+  borderRadius: "8px",
+  padding: "10px 16px",
   cursor: "pointer",
-  fontWeight: 700,
-  transition: "background 0.2s ease, transform 0.2s ease",
-};
-
-const editBtnIcon = {
+  fontWeight: "600",
   fontSize: "14px",
+  transition: "all 0.3s ease",
+  whiteSpace: "nowrap",
 };
 
-const courseTitle = {
-  margin: 0,
-  fontSize: "18px",
-  color: "#0f172a",
+const emptyState = {
+  textAlign: "center",
+  padding: "60px 20px",
 };
 
-const courseDescription = {
-  margin: "6px 0 0",
-  color: "#475569",
-  fontSize: "14px",
-  lineHeight: 1.8,
-  maxWidth: "68ch",
+const emptyIcon = {
+  fontSize: "48px",
+  marginBottom: "16px",
 };
 
 const emptyText = {
-  color: "#64748b",
-  marginTop: "12px",
+  color: "#6b7280",
+  fontSize: "16px",
+  margin: 0,
 };
 
 export default ManageCourses;

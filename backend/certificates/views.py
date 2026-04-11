@@ -40,6 +40,7 @@ def certificate_list_create(request):
             "course_title": cert.course_title,
             "certificate_id": cert.certificate_id,
             "status": cert.status,
+            "template": cert.template,
         })
 
     return Response(data)
@@ -52,6 +53,7 @@ def issue_certificate(request):
     course_title = request.data.get("course_title")
     certificate_id = request.data.get("certificate_id")
     status = request.data.get("status", "Issued")
+    template = request.data.get("template", "classic")
 
     if not student_name or not student_email or not course_title or not certificate_id:
         return Response({"error": "All fields are required"}, status=400)
@@ -66,6 +68,7 @@ def issue_certificate(request):
             course_title=course_title,
             certificate_id=certificate_id,
             status=status,
+            template=template,
         )
     except Exception as e:
         print("CERTIFICATE SAVE ERROR:", str(e))
@@ -125,6 +128,7 @@ def verify_certificate(request, certificate_id):
             "course_title": cert.course_title,
             "certificate_id": cert.certificate_id,
             "status": cert.status,
+            "template": cert.template,
         })
     except Certificate.DoesNotExist:
         return Response({"error": "Certificate not found"}, status=404)

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 
 const API = "https://certificate-backend-mxjt.onrender.com/api/accounts/admin-login/";
 
@@ -11,6 +10,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -41,71 +41,153 @@ const AdminLogin = () => {
       alert("Admin login successful ✅");
       navigate("/admin-dashboard");
     } catch (error) {
-      console.error("Admin login error:", error?.response?.data || error);
-      if (error?.response?.data?.error) {
-        alert(error.response.data.error);
-      } else {
-        alert("Invalid admin email or password ❌");
-      }
-    } finally {
+      console.error("Admin login error:", error?.response?.data || error?.message || error);
+      const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Invalid admin email or password ❌";
+      alert(errorMessage);
       setLoading(false);
     }
   };
 
   return (
     <>
-      <Header />
-
+      <style>
+        {`
+          @keyframes slideInLeft {
+            from {
+              opacity: 0;
+              transform: translateX(-30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+          input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+        `}
+      </style>
       <div style={container}>
-        <div style={leftSection}>
-          <div style={badge}>ADMIN ACCESS</div>
-          <h1 style={title}>Welcome Back, Admin</h1>
-          <p style={subtitle}>
-            Login to manage courses, send exams, review completed tests, and issue certificates.
-          </p>
+        <div style={responsiveWrapper}>
+          {/* Left Section */}
+          <div style={leftSection}>
+            <div style={brandSection}>
+              <div style={brandIcon}>👨‍💼</div>
+              <h1 style={brandTitle}>Admin Portal</h1>
+              <p style={brandSubtitle}>Manage Your Certificate System</p>
+            </div>
 
-          <div style={infoBox}>
-            <div style={infoCard}>
-              <span style={infoIcon}>📘</span>
-              <p style={infoText}>Manage Courses</p>
-            </div>
-            <div style={infoCard}>
-              <span style={infoIcon}>📩</span>
-              <p style={infoText}>Send Exams</p>
-            </div>
-            <div style={infoCard}>
-              <span style={infoIcon}>🏆</span>
-              <p style={infoText}>Issue Certificates</p>
+            <div style={featuresSection}>
+              <div style={featureItem}>
+                <div style={featureIcon}>📚</div>
+                <div>
+                  <h3 style={featureTitle}>Manage Courses</h3>
+                  <p style={featureDesc}>Create and manage course offerings</p>
+                </div>
+              </div>
+
+              <div style={featureItem}>
+                <div style={featureIcon}>📧</div>
+                <div>
+                  <h3 style={featureTitle}>Send Exams</h3>
+                  <p style={featureDesc}>Distribute exams to students</p>
+                </div>
+              </div>
+
+              <div style={featureItem}>
+                <div style={featureIcon}>✅</div>
+                <div>
+                  <h3 style={featureTitle}>Review Submissions</h3>
+                  <p style={featureDesc}>Check completed test submissions</p>
+                </div>
+              </div>
+
+              <div style={featureItem}>
+                <div style={featureIcon}>🏅</div>
+                <div>
+                  <h3 style={featureTitle}>Issue Certificates</h3>
+                  <p style={featureDesc}>Award digital certificates to students</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style={rightSection}>
-          <div style={card}>
-            <h2 style={cardTitle}>Admin Login</h2>
-            <p style={cardSubtitle}>Enter your credentials to continue</p>
+          {/* Right Section */}
+          <div style={rightSection}>
+            <div style={formCard}>
+              <div style={formHeader}>
+                <h2 style={formTitle}>Admin Sign In</h2>
+                <p style={formSubtitle}>Enter your admin credentials</p>
+                <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "8px" }}>
+                  Demo admin: admin@gmail.com / admin123
+                </p>
+              </div>
 
-            <form onSubmit={handleLogin}>
-              <input
-                type="email"
-                placeholder="Admin Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={input}
-              />
+              <form onSubmit={handleLogin} style={form}>
+                {/* Email Input */}
+                <div style={inputWrapper}>
+                  <label style={label}>Email Address</label>
+                  <div style={{
+                    ...inputContainer,
+                    borderColor: focusedField === 'email' ? '#3b82f6' : '#e5e7eb',
+                    boxShadow: focusedField === 'email' ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none'
+                  }}>
+                    <span style={inputIcon}>💼</span>
+                    <input
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      style={inputField}
+                    />
+                  </div>
+                </div>
 
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={input}
-              />
+                {/* Password Input */}
+                <div style={inputWrapper}>
+                  <label style={label}>Password</label>
+                  <div style={{
+                    ...inputContainer,
+                    borderColor: focusedField === 'password' ? '#3b82f6' : '#e5e7eb',
+                    boxShadow: focusedField === 'password' ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none'
+                  }}>
+                    <span style={inputIcon}>🔐</span>
+                    <input
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                      style={inputField}
+                    />
+                  </div>
+                </div>
 
-              <button type="submit" style={btn} disabled={loading}>
-                {loading ? "Logging in..." : "Login as Admin"}
-              </button>
-            </form>
+                <button type="submit" style={{...btnStyle, opacity: loading ? 0.7 : 1}} disabled={loading}>
+                  <span style={{marginRight: '8px'}}>
+                    {loading ? '⏳' : '🔓'}
+                  </span>
+                  {loading ? 'Signing In...' : 'Access Admin Panel'}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -115,125 +197,174 @@ const AdminLogin = () => {
 
 const container = {
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #334155 100%)",
-  display: "grid",
-  gridTemplateColumns: "1.2fr 1fr",
-  gap: "20px",
+  background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)",
+  display: "flex",
+  justifyContent: "center",
   alignItems: "center",
-  padding: "30px",
-  fontFamily: "Arial, sans-serif",
+  padding: "20px",
+};
+
+const wrapper = {
+  width: "100%",
+  maxWidth: "1200px",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "40px",
+  alignItems: "center",
 };
 
 const leftSection = {
-  padding: "20px 30px",
+  color: "white",
+  animation: "slideInLeft 0.8s ease-out",
+  display: window.innerWidth <= 768 ? "none" : "block",
 };
 
-const badge = {
-  display: "inline-block",
-  background: "#334155",
-  color: "#f1f5f9",
-  padding: "8px 14px",
-  borderRadius: "999px",
-  fontSize: "12px",
-  fontWeight: "700",
-  letterSpacing: "1px",
-  marginBottom: "18px",
-  border: "1px solid #475569",
+const brandSection = {
+  marginBottom: "50px",
 };
 
-const title = {
+const brandIcon = {
+  fontSize: "60px",
+  marginBottom: "20px",
+};
+
+const brandTitle = {
   fontSize: "42px",
-  color: "#f1f5f9",
-  margin: "0 0 12px 0",
+  fontWeight: "700",
+  margin: "0 0 10px 0",
   lineHeight: "1.2",
 };
 
-const subtitle = {
-  color: "#cbd5e1",
-  fontSize: "17px",
-  maxWidth: "560px",
-  lineHeight: "1.7",
-};
-
-const infoBox = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-  gap: "16px",
-  marginTop: "28px",
-  maxWidth: "600px",
-};
-
-const infoCard = {
-  background: "#1e293b",
-  borderRadius: "18px",
-  padding: "18px",
-  boxShadow: "0 8px 22px rgba(0, 0, 0, 0.3)",
-  textAlign: "center",
-  border: "1px solid #334155",
-};
-
-const infoIcon = {
-  fontSize: "28px",
-  display: "block",
-  marginBottom: "10px",
-};
-
-const infoText = {
+const brandSubtitle = {
+  fontSize: "18px",
+  opacity: 0.9,
   margin: 0,
+  fontWeight: "300",
+};
+
+const featuresSection = {
+  display: "grid",
+  gap: "24px",
+};
+
+const featureItem = {
+  display: "flex",
+  gap: "16px",
+  alignItems: "flex-start",
+};
+
+const featureIcon = {
+  fontSize: "28px",
+  minWidth: "40px",
+  marginTop: "4px",
+};
+
+const featureTitle = {
+  fontSize: "16px",
   fontWeight: "600",
-  color: "#e2e8f0",
+  margin: "0 0 4px 0",
+  color: "white",
+};
+
+const featureDesc = {
+  fontSize: "14px",
+  opacity: 0.85,
+  margin: 0,
 };
 
 const rightSection = {
-  display: "flex",
-  justifyContent: "center",
+  animation: "slideInRight 0.8s ease-out",
 };
 
-const card = {
-  width: "100%",
-  maxWidth: "430px",
-  background: "#1e293b",
-  padding: "32px",
-  borderRadius: "24px",
-  boxShadow: "0 18px 40px rgba(0, 0, 0, 0.4)",
-  border: "1px solid #334155",
+const formCard = {
+  background: "white",
+  borderRadius: "20px",
+  padding: window.innerWidth <= 768 ? "30px 20px" : "40px",
+  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
 };
 
-const cardTitle = {
+const formHeader = {
+  marginBottom: "30px",
+  textAlign: "center",
+};
+
+const formTitle = {
+  fontSize: window.innerWidth <= 768 ? "24px" : "28px",
+  fontWeight: "700",
+  color: "#0f172a",
   margin: "0 0 8px 0",
-  color: "#f1f5f9",
-  fontSize: "30px",
 };
 
-const cardSubtitle = {
-  margin: "0 0 22px 0",
-  color: "#94a3b8",
-  fontSize: "15px",
+const formSubtitle = {
+  fontSize: "14px",
+  color: "#64748b",
+  margin: 0,
 };
 
-const input = {
-  width: "100%",
-  padding: "14px",
-  marginBottom: "14px",
+const form = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
+};
+
+const inputWrapper = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+};
+
+const label = {
+  fontSize: "14px",
+  fontWeight: "600",
+  color: "#0f172a",
+};
+
+const inputContainer = {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "12px 16px",
+  border: "2px solid #e5e7eb",
   borderRadius: "12px",
-  border: "1px solid #475569",
-  boxSizing: "border-box",
-  fontSize: "15px",
-  outline: "none",
-  background: "#334155",
-  color: "#f1f5f9",
+  transition: "all 0.3s ease",
+  backgroundColor: "#f8fafc",
 };
 
-const btn = {
+const inputIcon = {
+  fontSize: "18px",
+  minWidth: "20px",
+};
+
+const inputField = {
+  flex: 1,
+  border: "none",
+  background: "transparent",
+  fontSize: "14px",
+  color: "#0f172a",
+  fontFamily: "inherit",
+  padding: 0,
+};
+
+const btnStyle = {
   width: "100%",
-  padding: "14px",
-  background: "#2563eb",
+  padding: "14px 16px",
+  background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
   color: "white",
   border: "none",
   borderRadius: "12px",
   cursor: "pointer",
+  fontWeight: "600",
   fontSize: "16px",
-  fontWeight: "700",
+  transition: "all 0.3s ease",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+// Responsive adjustments
+const responsiveWrapper = {
+  ...wrapper,
+  gridTemplateColumns: window.innerWidth <= 768 ? "1fr" : "1fr 1fr",
 };
 
 export default AdminLogin;

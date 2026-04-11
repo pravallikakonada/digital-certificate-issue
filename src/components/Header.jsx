@@ -17,59 +17,70 @@ const Header = () => {
   };
 
   return (
-    <header style={headerStyle}>
-      <div style={headerContainer}>
-        <div style={logoSection}>
-          <div style={logoIcon}>🎓</div>
-          <div style={logoText}>
-            <h1 style={mainTitle}>Digital Certificate System</h1>
-            <p style={subtitle}>Secure & Verified Certifications</p>
-          </div>
-        </div>
-
-        <nav style={navStyle}>
-          {!email && (
-            <>
-              <Link to="/" style={navLink}>Home</Link>
-              <Link to="/verify" style={navLink}>Verify Certificate</Link>
-              <Link to="/admin-login" style={primaryBtn}>Admin Login</Link>
-              <Link to="/student-login" style={secondaryBtn}>Student Login</Link>
-            </>
-          )}
-
-          {email && role === "admin" && (
-            <>
-              <Link to="/admin-dashboard" style={navLink}>Dashboard</Link>
-              <Link to="/manage-courses" style={navLink}>Manage Courses</Link>
-              <Link to="/send-exam" style={navLink}>Send Exam</Link>
-              <Link to="/completed-tests" style={navLink}>Completed Tests</Link>
-            </>
-          )}
-
-          {email && role === "student" && (
-            <>
-              <Link to="/student-dashboard" style={navLink}>Dashboard</Link>
-              <Link to="/my-certificates" style={navLink}>My Certificates</Link>
-              <Link to="/verify" style={navLink}>Verify</Link>
-            </>
-          )}
-
-          {email && (
-            <>
-              <div style={userInfo}>
-                <span style={userEmail}>{email}</span>
-                <span style={userRole}>
-                  {role === "admin" ? "Admin" : "Student"}
-                </span>
+    <>
+      <style>
+        {`
+          @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          a:hover { text-decoration: none; }
+        `}
+      </style>
+      <header style={headerStyle}>
+        <div style={headerContainer}>
+          <Link to="/" style={logoLink}>
+            <div style={logoSection}>
+              <div style={logoIcon}>🎓</div>
+              <div style={logoText}>
+                <h1 style={mainTitle}>Digital Certificates</h1>
+                <p style={subtitle}>Secure & Verified</p>
               </div>
-              <button onClick={handleLogout} style={logoutBtn}>
-                Logout
-              </button>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
+            </div>
+          </Link>
+
+          <nav style={navStyle}>
+            {!email && (
+              <>
+                <Link to="/" style={navLink}>Home</Link>
+                <Link to="/verify" style={navLink}>Verify</Link>
+                <Link to="/admin-login" style={primaryBtn}>Admin</Link>
+                <Link to="/student-login" style={secondaryBtn}>Student</Link>
+              </>
+            )}
+
+            {email && role === "admin" && (
+              <>
+                <Link to="/admin-dashboard" style={navLink}>Dashboard</Link>
+                <Link to="/manage-courses" style={navLink}>Courses</Link>
+                <Link to="/send-exam" style={navLink}>Send Exam</Link>
+                <Link to="/completed-tests" style={navLink}>Tests</Link>
+              </>
+            )}
+
+            {email && role === "student" && (
+              <>
+                <Link to="/student-dashboard" style={navLink}>Dashboard</Link>
+                <Link to="/my-certificates" style={navLink}>Certificates</Link>
+                <Link to="/verify" style={navLink}>Verify</Link>
+              </>
+            )}
+
+            {email && (
+              <>
+                <div style={userInfo}>
+                  <span style={userEmail}>{email}</span>
+                  <span style={userRole}>{role === "admin" ? "👨‍💼 Admin" : "👨‍🎓 Student"}</span>
+                </div>
+                <button onClick={handleLogout} style={logoutBtn}>
+                  Logout
+                </button>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
+    </>
   );
 };
 
@@ -77,64 +88,76 @@ const headerStyle = {
   background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
   color: "white",
   padding: "0",
-  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
   position: "sticky",
   top: 0,
   zIndex: 1000,
+  animation: "slideDown 0.5s ease-out",
 };
 
 const headerContainer = {
   maxWidth: "1200px",
   margin: "0 auto",
-  padding: "16px 30px",
+  padding: "14px 30px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
   flexWrap: "wrap",
-  gap: "20px",
+  gap: "24px",
+};
+
+const logoLink = {
+  textDecoration: "none",
+  display: "flex",
+  alignItems: "center",
 };
 
 const logoSection = {
   display: "flex",
   alignItems: "center",
-  gap: "12px",
+  gap: "10px",
+  cursor: "pointer",
+  transition: "all 0.3s ease",
 };
 
 const logoIcon = {
-  fontSize: "32px",
+  fontSize: "28px",
   background: "rgba(255, 255, 255, 0.2)",
-  borderRadius: "12px",
-  padding: "8px",
+  borderRadius: "10px",
+  padding: "6px 8px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  backdropFilter: "blur(10px)",
 };
 
 const logoText = {
   display: "flex",
   flexDirection: "column",
+  gap: "2px",
 };
 
 const mainTitle = {
   margin: "0",
-  fontSize: "20px",
+  fontSize: "16px",
   fontWeight: "700",
   color: "white",
   lineHeight: "1.2",
+  letterSpacing: "-0.3px",
 };
 
 const subtitle = {
-  margin: "2px 0 0",
-  fontSize: "12px",
+  margin: "0",
+  fontSize: "11px",
   color: "rgba(255, 255, 255, 0.8)",
-  fontWeight: "400",
+  fontWeight: "500",
   textTransform: "uppercase",
-  letterSpacing: "0.5px",
+  letterSpacing: "0.4px",
 };
 
 const navStyle = {
   display: "flex",
-  gap: "16px",
+  gap: "12px",
   alignItems: "center",
   flexWrap: "wrap",
 };
@@ -143,13 +166,12 @@ const navLink = {
   color: "white",
   textDecoration: "none",
   fontWeight: "500",
-  fontSize: "14px",
-  padding: "8px 12px",
+  fontSize: "13px",
+  padding: "8px 14px",
   borderRadius: "6px",
   transition: "all 0.2s ease",
-  ":hover": {
-    background: "rgba(255, 255, 255, 0.1)",
-  },
+  display: "inline-block",
+  background: "transparent",
 };
 
 const primaryBtn = {
@@ -157,53 +179,55 @@ const primaryBtn = {
   color: "#1e3a8a",
   textDecoration: "none",
   fontWeight: "600",
-  fontSize: "14px",
-  padding: "10px 16px",
-  borderRadius: "8px",
+  fontSize: "13px",
+  padding: "8px 16px",
+  borderRadius: "6px",
   border: "none",
   cursor: "pointer",
   transition: "all 0.2s ease",
-  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  boxShadow: "0 4px 12px rgba(255, 255, 255, 0.25)",
+  display: "inline-block",
 };
 
 const secondaryBtn = {
-  background: "rgba(255, 255, 255, 0.1)",
+  background: "rgba(255, 255, 255, 0.15)",
   color: "white",
   textDecoration: "none",
   fontWeight: "600",
-  fontSize: "14px",
-  padding: "10px 16px",
-  borderRadius: "8px",
+  fontSize: "13px",
+  padding: "8px 16px",
+  borderRadius: "6px",
   border: "1px solid rgba(255, 255, 255, 0.3)",
   cursor: "pointer",
   transition: "all 0.2s ease",
-  ":hover": {
-    background: "rgba(255, 255, 255, 0.2)",
-  },
+  display: "inline-block",
+  backdropFilter: "blur(10px)",
 };
 
 const userInfo = {
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-end",
-  marginRight: "12px",
+  gap: "2px",
+  marginRight: "8px",
   padding: "8px 12px",
   background: "rgba(255, 255, 255, 0.1)",
-  borderRadius: "8px",
+  borderRadius: "6px",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255, 255, 255, 0.2)",
 };
 
 const userEmail = {
-  fontSize: "13px",
+  fontSize: "12px",
   fontWeight: "600",
   color: "white",
 };
 
 const userRole = {
-  fontSize: "11px",
-  color: "rgba(255, 255, 255, 0.7)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  fontWeight: "500",
+  fontSize: "10px",
+  color: "rgba(255, 255, 255, 0.8)",
+  fontWeight: "600",
+  letterSpacing: "0.3px",
 };
 
 const logoutBtn = {
@@ -216,9 +240,7 @@ const logoutBtn = {
   fontWeight: "600",
   fontSize: "13px",
   transition: "all 0.2s ease",
-  ":hover": {
-    background: "#b91c1c",
-  },
+  boxShadow: "0 4px 12px rgba(220, 38, 38, 0.3)",
 };
 
 export default Header;

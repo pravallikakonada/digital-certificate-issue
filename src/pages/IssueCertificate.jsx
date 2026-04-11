@@ -18,6 +18,7 @@ const IssueCertificate = () => {
   const [courseTitle, setCourseTitle] = useState(location.state?.course_title || "");
   const [certificateId, setCertificateId] = useState("");
   const [status, setStatus] = useState("Issued");
+  const [template, setTemplate] = useState("classic");
   const [loading, setLoading] = useState(false);
   const [fetchingStudents, setFetchingStudents] = useState(true);
 
@@ -111,6 +112,7 @@ const IssueCertificate = () => {
       course_title: courseTitle.trim(),
       certificate_id: certificateId,
       status: status,
+      template: template,
     };
 
     try {
@@ -161,6 +163,7 @@ const IssueCertificate = () => {
       setCourseTitle("");
       setCertificateId("");
       setStatus("Issued");
+      setTemplate("classic");
 
       // Clear any remaining localStorage data
       localStorage.removeItem('certificateTestData');
@@ -245,6 +248,16 @@ const IssueCertificate = () => {
                 readOnly={!!selectedStudentId}
               />
 
+              <select
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                style={select}
+              >
+                <option value="classic">Classic Template</option>
+                <option value="modern">Modern Template</option>
+                <option value="elegant">Elegant Template</option>
+              </select>
+
               <input
                 type="text"
                 value={certificateId}
@@ -322,142 +335,165 @@ const IssueCertificate = () => {
 
 const container = {
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #eef4ff, #f8fbff)",
-  padding: "30px 20px",
+  background: "linear-gradient(180deg, #0f172a 0%, #312e81 45%, #4338ca 100%)",
+  padding: "30px 20px 50px",
+  color: "white",
 };
 
 const layout = {
   maxWidth: "1200px",
   margin: "0 auto",
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "30px",
+  gridTemplateColumns: "1.05fr 0.95fr",
+  gap: "32px",
   alignItems: "start",
 };
 
 const card = {
   width: "100%",
-  background: "#fff",
-  padding: "30px",
-  borderRadius: "18px",
-  boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+  background: "rgba(255,255,255,0.08)",
+  borderRadius: "28px",
+  padding: "32px",
+  border: "1px solid rgba(255,255,255,0.16)",
+  boxShadow: "0 25px 80px rgba(15, 23, 42, 0.25)",
 };
 
 const heading = {
-  marginBottom: "20px",
-  color: "#1e3a8a",
+  marginBottom: "24px",
+  color: "white",
   textAlign: "center",
+  fontSize: "2rem",
+  letterSpacing: "-0.02em",
 };
 
 const input = {
   width: "100%",
-  padding: "13px",
-  marginBottom: "14px",
+  padding: "14px 16px",
+  marginBottom: "16px",
   boxSizing: "border-box",
-  borderRadius: "10px",
-  border: "1px solid #cbd5e1",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.18)",
   outline: "none",
+  background: "rgba(255,255,255,0.12)",
+  color: "white",
   fontSize: "15px",
+  transition: "all 0.2s ease",
 };
 
 const select = {
   width: "100%",
-  padding: "13px",
-  marginBottom: "14px",
+  padding: "14px 16px",
+  marginBottom: "16px",
   boxSizing: "border-box",
-  borderRadius: "10px",
-  border: "1px solid #cbd5e1",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.18)",
   outline: "none",
   fontSize: "15px",
-  backgroundColor: "white",
+  backgroundColor: "rgba(255,255,255,0.12)",
+  color: "white",
   cursor: "pointer",
+  transition: "all 0.2s ease",
 };
 
 const btn = {
   width: "100%",
-  padding: "13px",
-  background: "#2563eb",
+  padding: "15px 16px",
+  background: "linear-gradient(135deg, #818cf8, #6366f1)",
   color: "white",
   border: "none",
-  borderRadius: "10px",
+  borderRadius: "16px",
   cursor: "pointer",
   fontSize: "16px",
-  fontWeight: "bold",
+  fontWeight: "700",
+  letterSpacing: "0.01em",
+  boxShadow: "0 14px 30px rgba(99, 102, 241, 0.28)",
+  transition: "transform 0.2s ease, box-shadow 0.2s ease",
 };
 
 const previewWrapper = {
   width: "100%",
+  display: "grid",
+  gap: "20px",
 };
 
 const previewTitle = {
-  color: "#1e3a8a",
-  marginBottom: "14px",
+  color: "#eef2ff",
+  marginBottom: "16px",
   textAlign: "center",
+  fontSize: "1.5rem",
+  fontWeight: "700",
 };
 
 const certificateBox = {
-  background: "#fff",
-  borderRadius: "18px",
-  padding: "18px",
-  boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+  background: "rgba(255,255,255,0.12)",
+  borderRadius: "28px",
+  padding: "24px",
+  border: "1px solid rgba(255,255,255,0.18)",
+  boxShadow: "0 20px 50px rgba(15, 23, 42, 0.25)",
 };
 
 const certificateInner = {
-  border: "6px solid #2563eb",
-  borderRadius: "16px",
-  padding: "24px 20px",
-  background: "linear-gradient(180deg, #ffffff, #f8fbff)",
+  border: "4px solid rgba(99, 102, 241, 0.58)",
+  borderRadius: "22px",
+  padding: "28px 24px",
+  background: "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(243,244,246,0.9))",
   textAlign: "center",
 };
 
 const smallTop = {
-  color: "#2563eb",
-  fontWeight: "bold",
-  letterSpacing: "1px",
-  marginBottom: "8px",
+  color: "#4338ca",
+  fontWeight: "800",
+  letterSpacing: "0.2em",
+  textTransform: "uppercase",
+  marginBottom: "10px",
+  fontSize: "0.85rem",
 };
 
 const certificateHeading = {
-  fontSize: "28px",
-  color: "#1e293b",
-  marginBottom: "16px",
+  fontSize: "2rem",
+  color: "#111827",
+  marginBottom: "18px",
+  lineHeight: "1.1",
 };
 
 const certText = {
-  color: "#475569",
-  margin: "8px 0",
+  color: "#4b5563",
+  margin: "10px 0",
+  fontSize: "1rem",
 };
 
 const studentNameStyle = {
-  fontSize: "28px",
-  color: "#0f172a",
-  margin: "10px 0",
-  fontWeight: "bold",
+  fontSize: "2rem",
+  color: "#111827",
+  margin: "14px 0",
+  fontWeight: "800",
 };
 
 const courseStyle = {
-  fontSize: "22px",
-  color: "#2563eb",
+  fontSize: "1.5rem",
+  color: "#4338ca",
   margin: "8px 0 18px",
+  fontWeight: "700",
 };
 
 const detailsBox = {
-  background: "#f8fafc",
-  borderRadius: "12px",
-  padding: "14px",
+  background: "#eef2ff",
+  borderRadius: "16px",
+  padding: "18px 20px",
   textAlign: "left",
-  marginTop: "10px",
+  marginTop: "12px",
   lineHeight: "1.8",
   color: "#334155",
-  fontSize: "14px",
+  fontSize: "0.95rem",
 };
 
 const signatureRow = {
-  marginTop: "26px",
+  marginTop: "28px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
   gap: "20px",
+  flexWrap: "wrap",
 };
 
 const signBlock = {
@@ -466,34 +502,36 @@ const signBlock = {
 };
 
 const line = {
-  width: "120px",
-  borderTop: "2px solid #334155",
-  marginBottom: "6px",
+  width: "140px",
+  borderTop: "2px solid #4338ca",
+  marginBottom: "8px",
 };
 
 const signText = {
-  fontSize: "13px",
+  fontSize: "0.95rem",
   color: "#475569",
 };
 
 const sealCircle = {
-  width: "70px",
-  height: "70px",
+  width: "82px",
+  height: "82px",
   borderRadius: "50%",
-  border: "3px solid #16a34a",
-  color: "#16a34a",
+  background: "linear-gradient(135deg, #34d399 0%, #10b981 100%)",
+  color: "white",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  fontWeight: "bold",
-  fontSize: "14px",
+  fontWeight: "800",
+  fontSize: "15px",
+  boxShadow: "0 18px 40px rgba(16, 185, 129, 0.22)",
 };
 
 const mailNote = {
-  marginTop: "12px",
-  color: "#475569",
-  fontSize: "14px",
+  marginTop: "14px",
+  color: "rgba(255,255,255,0.82)",
+  fontSize: "0.95rem",
   textAlign: "center",
+  lineHeight: "1.7",
 };
 
 export default IssueCertificate;

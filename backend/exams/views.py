@@ -2,6 +2,7 @@ import csv
 import io
 import traceback
 import smtplib
+import random
 from urllib.parse import quote
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
@@ -306,9 +307,137 @@ def update_exam_status(request):
 @api_view(["GET"])
 def get_questions(request, course_title):
     try:
-        questions = Question.objects.filter(course_title=course_title)
-        data = [{"id": q.id, "question_text": q.question_text, "option1": q.option1, "option2": q.option2, "option3": q.option3, "option4": q.option4, "correct_answer": q.correct_answer} for q in questions]
+        student_email = request.GET.get("email", "").strip().lower()
+        limit_param = request.GET.get("limit")
+        try:
+            limit = int(limit_param) if limit_param is not None else None
+        except ValueError:
+            limit = None
+
+        questions = list(Question.objects.filter(course_title__iexact=course_title))
+
+        if student_email:
+            seed = f"{course_title.strip().lower()}:{student_email}"
+            rng = random.Random(seed)
+            rng.shuffle(questions)
+        else:
+            random.shuffle(questions)
+
+        if limit is not None and limit > 0:
+            questions = questions[:limit]
+
+        data = [
+            {
+                "id": q.id,
+                "course_title": q.course_title,
+                "question_text": q.question_text,
+                "option1": q.option1,
+                "option2": q.option2,
+                "option3": q.option3,
+                "option4": q.option4,
+                "correct_answer": q.correct_answer,
+            }
+            for q in questions
+        ]
         return Response(data, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(["POST"])
+def create_question(request):
+    try:
+        course_title = request.data.get("course_title")
+        question_text = request.data.get("question_text")
+        option1 = request.data.get("option1")
+        option2 = request.data.get("option2")
+        option3 = request.data.get("option3")
+        option4 = request.data.get("option4")
+        correct_answer = request.data.get("correct_answer")
+
+        if not all([course_title, question_text, option1, option2, option3, option4, correct_answer]):
+            return Response({"error": "All fields are required"}, status=400)
+
+        # Validate that correct_answer is one of the options
+        options = [option1, option2, option3, option4]
+        if correct_answer not in options:
+            return Response({"error": "Correct answer must be one of the four options"}, status=400)
+
+        question = Question.objects.create(
+            course_title=course_title,
+            question_text=question_text,
+            option1=option1,
+            option2=option2,
+            option3=option3,
+            option4=option4,
+            correct_answer=correct_answer,
+        )
+
+        return Response({
+            "id": question.id,
+            "course_title": question.course_title,
+            "question_text": question.question_text,
+            "option1": question.option1,
+            "option2": question.option2,
+            "option3": question.option3,
+            "option4": question.option4,
+            "correct_answer": question.correct_answer,
+        }, status=201)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(["PUT"])
+def update_question(request, question_id):
+    try:
+        question = Question.objects.get(id=question_id)
+
+        course_title = request.data.get("course_title")
+        question_text = request.data.get("question_text")
+        option1 = request.data.get("option1")
+        option2 = request.data.get("option2")
+        option3 = request.data.get("option3")
+        option4 = request.data.get("option4")
+        correct_answer = request.data.get("correct_answer")
+
+        if not all([course_title, question_text, option1, option2, option3, option4, correct_answer]):
+            return Response({"error": "All fields are required"}, status=400)
+
+        # Validate that correct_answer is one of the options
+        options = [option1, option2, option3, option4]
+        if correct_answer not in options:
+            return Response({"error": "Correct answer must be one of the four options"}, status=400)
+
+        question.course_title = course_title
+        question.question_text = question_text
+        question.option1 = option1
+        question.option2 = option2
+        question.option3 = option3
+        question.option4 = option4
+        question.correct_answer = correct_answer
+        question.save()
+
+        return Response({
+            "id": question.id,
+            "course_title": question.course_title,
+            "question_text": question.question_text,
+            "option1": question.option1,
+            "option2": question.option2,
+            "option3": question.option3,
+            "option4": question.option4,
+            "correct_answer": question.correct_answer,
+        }, status=200)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(["DELETE"])
+def delete_question(request, question_id):
+    try:
+        question = Question.objects.get(id=question_id)
+        question.delete()
+        return Response({"message": "Question deleted successfully"}, status=200)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
