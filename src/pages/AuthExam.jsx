@@ -31,7 +31,12 @@ const AuthExam = () => {
     e.preventDefault();
     setError("");
 
-    if (!email.trim() || !password.trim()) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (!normalizedEmail || !trimmedPassword) {
       setError("Please fill all required fields");
       return;
     }
@@ -40,30 +45,38 @@ const AuthExam = () => {
       setLoading(true);
 
       if (isSignup) {
-        if (!name.trim()) {
+        if (!trimmedName) {
           setError("Please enter your name");
           setLoading(false);
           return;
         }
 
-        if (!confirmPassword.trim()) {
+        if (!trimmedConfirmPassword) {
           setError("Please confirm password");
           setLoading(false);
           return;
         }
 
-        if (password !== confirmPassword) {
+        if (trimmedPassword !== trimmedConfirmPassword) {
           setError("Passwords do not match");
           setLoading(false);
           return;
         }
 
         try {
-          await api.post("/api/accounts/signup/", {
-            name: name.trim(),
-            email: email.trim(),
-            password: password.trim(),
+          const signupResponse = await api.post("/api/accounts/signup/", {
+            name: trimmedName,
+            email: normalizedEmail,
+            password: trimmedPassword,
           });
+
+          localStorage.setItem("studentEmail", signupResponse.data.email || normalizedEmail);
+          localStorage.setItem("studentName", signupResponse.data.name || trimmedName);
+          localStorage.setItem("role", "student");
+
+          alert("Signup successful ✅");
+          goToTest();
+          return;
         } catch (signupErr) {
           const msg = signupErr?.response?.data?.error || "";
           if (!msg.toLowerCase().includes("already exists")) {
@@ -75,15 +88,15 @@ const AuthExam = () => {
       }
 
       const loginResponse = await api.post("/api/accounts/login/", {
-        email: email.trim(),
-        password: password.trim(),
+        email: normalizedEmail,
+        password: trimmedPassword,
       });
 
-      localStorage.setItem("studentEmail", loginResponse.data.email || email);
-      localStorage.setItem("studentName", loginResponse.data.name || name);
+      localStorage.setItem("studentEmail", loginResponse.data.email || normalizedEmail);
+      localStorage.setItem("studentName", loginResponse.data.name || trimmedName);
       localStorage.setItem("role", "student");
 
-      alert(isSignup ? "Signup/Login successful " : "Login successful ");
+      alert(isSignup ? "Signup/Login successful" : "Login successful");
       goToTest();
     } catch (err) {
       const msg =

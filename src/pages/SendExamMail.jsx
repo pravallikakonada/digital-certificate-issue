@@ -80,7 +80,7 @@ const SendExamMail = () => {
         );
 
         console.log("Send exam response:", response.data);
-        alert(response.data.message || "Exam mail sent successfully ✅");
+        alert(response.data.message || "Exam mail sent successfully ");
 
         setStudentName("");
         setStudentEmail("");

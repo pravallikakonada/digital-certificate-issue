@@ -38,7 +38,7 @@ const AdminLogin = () => {
       localStorage.setItem("email", response.data.email || email);
       localStorage.setItem("role", "admin");
 
-      alert("Admin login successful ✅");
+      alert("Admin login successful ");
       navigate("/admin-dashboard");
     } catch (error) {
       console.error("Admin login error:", error?.response?.data || error?.message || error);
@@ -109,7 +109,7 @@ const AdminLogin = () => {
               </div>
 
               <div style={featureItem}>
-                <div style={featureIcon}>✅</div>
+                <div style={featureIcon}></div>
                 <div>
                   <h3 style={featureTitle}>Review Submissions</h3>
                   <p style={featureDesc}>Check completed test submissions</p>
